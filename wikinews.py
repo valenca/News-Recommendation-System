@@ -1,4 +1,6 @@
 import nltk, string, os.path
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.svm import SVC
 from sklearn import cross_validation
 from pickle import dump, load
 
@@ -117,11 +119,28 @@ def get_tp_data(documents, terms, existences):
 		tp_features.append((dict(zip(terms,existences[i])),documents[i].topic))
 	return tp_features
 
+# GIS,IIS,MEGAM,TADM
+# bernoulli,svc
+def get_classifier(classifier, train, mealgorithm='GIS', sklalgorithm='bernoulli'):
+	if classifier == 'NaiveBayes':
+		return nltk.NaiveBayesClassifier.train(train)
+	elif classifier == 'DecisionTree':
+		return nltk.DecisionTreeClassifier.train(train)
+	elif classifier == 'Maxent':
+		return nltk.DecisionTreeClassifier.train(train, mealgorithm)
+	elif classifier == 'Sklearn':
+		if sklalgorithm == 'bernoulli':
+			return nltk.SklearnClassifier(BernoulliNB()).train(train)
+		elif sklalgorithm == 'svc':
+			return nltk.SklearnClassifier(SVC(), sparse=False).train(train)
+	elif classifier == 'SVM':
+		pass
+
 def cv_tester(tp_features):
 	cv = cross_validation.KFold(len(tp_features), n_folds=len(tp_features)/5, shuffle=True)
 
 	for train_set, test_set in cv:
-		classifier = nltk.DecisionTreeClassifier.train([tp_features[i] for i in train_set])
+		classifier = get_classifier('DecisionTree', [tp_features[i] for i in train_set])
 		results = classifier.batch_classify([tp_features[i][0] for i in test_set])
 		print 'Results: ' + str([tp_features[i][1] for i in test_set]) + " - " + str(results)
 		#for pdist in classifier.batch_prob_classify([tp_features[i][0] for i in test_set]):
