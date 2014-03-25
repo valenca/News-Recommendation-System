@@ -130,4 +130,4 @@ if __name__ == '__main__':
 	#csv(documents)
 
 	#for i in documents: print '\n'.join(list(map(str, i.stems)))
-	#for i in documents: print i.stems
+	for i in documents: print i.stems
