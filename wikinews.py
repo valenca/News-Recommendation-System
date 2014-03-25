@@ -1,4 +1,6 @@
-import nltk, string, sys
+import nltk, string, os.path
+from sklearn import cross_validation
+from pickle import dump, load
 
 class Document():
 
@@ -90,7 +92,74 @@ def stemmer(documents):
 	stemmer = nltk.stem.wordnet.WordNetLemmatizer()
 	for i in documents: i.stems = [stemmer.lemmatize(j) for j in i.tags]
 
-def csv(documents):
+def get_terms(documents):
+	# Get all terms
+	terms = []
+	for i in documents: terms.extend(i.stems)
+	return list(set(terms))
+
+def get_occurrences(documents, terms):
+	# Get occurrences
+	occurrences = []
+	for i in documents:
+		occurrences.append([i.stems.count(j) for j in terms])
+	return occurrences
+
+def get_existences(occurrences):
+	# Get existences
+	#existences = [[min(j,1) for j in i] for i in occurrences]
+	return [list(map(lambda (x):min(x,1),i)) for i in occurrences]
+
+def get_tp_data(documents, terms, existences):
+	# Get tuples with correspondences
+	tp_features = []
+	for i in range(len(documents)):
+		tp_features.append((dict(zip(terms,existences[i])),documents[i].topic))
+	return tp_features
+
+def cv_tester(tp_features):
+	cv = cross_validation.KFold(len(tp_features), n_folds=len(tp_features)/5, shuffle=True)
+
+	for train_set, test_set in cv:
+		classifier = nltk.DecisionTreeClassifier.train([tp_features[i] for i in train_set])
+		results = classifier.batch_classify([tp_features[i][0] for i in test_set])
+		print 'Results: ' + str([tp_features[i][1] for i in test_set]) + " - " + str(results)
+		#for pdist in classifier.batch_prob_classify([tp_features[i][0] for i in test_set]):
+		#	print '%.4f %.4f' % (pdist.prob('Sports'), pdist.prob('Economy'))
+		print 'Accuracy: ', nltk.classify.util.accuracy(classifier, [tp_features[i] for i in test_set])
+		#print classifier.show_most_informative_features()
+
+if __name__ == '__main__':
+
+	if not os.path.isfile('features.dat'):
+
+		documents = []
+
+		## Feature Extraction ##
+		parser(documents)
+		sentencer(documents)
+		tokenizer(documents)
+		tagger(documents)
+		stemmer(documents)
+		########################
+
+		## Text Modeling ##
+		terms = get_terms(documents)
+		occurrences = get_occurrences(documents, terms)
+		existences = get_existences(occurrences)
+		tp_features = get_tp_data(documents, terms, existences)
+		with open('features.dat','wb') as f:
+			dump(tp_features, f)
+		###################
+	else:
+		with open('features.dat','rb') as f:
+			tp_features = load(f)
+
+	## Cross-Validation Test ##
+	cv_tester(tp_features)
+
+
+'''def csv(documents):
 	# Remove commas
 	for i in documents: i.stems = [j.replace(',','') for j in i.stems]
 
@@ -103,31 +172,4 @@ def csv(documents):
 	with open("database.csv", "w") as f:
 		f.write(','.join(terms) + "\n")
 		for i in documents:
-			f.write(','.join(list(map(str, [i.stems.count(j) for j in terms]))) + "\n")
-
-def occurrence(documents, terms, occurrencies):
-	# Get all terms
-	for i in documents: terms.extend(i.stems)
-	terms = list(set(terms))
-
-	# Get occurrencies
-	for i in documents:
-		occurrencies.append([i.stems.count(j) for j in terms])
-
-
-if __name__ == '__main__':
-
-	documents = []
-	terms = []
-	occurrencies = []
-	parser(documents)
-	sentencer(documents)
-	tokenizer(documents)
-	tagger(documents)
-	stemmer(documents)
-	occurrence(documents, terms, occurrencies)
-	#print occurrencies
-	#csv(documents)
-
-	#for i in documents: print '\n'.join(list(map(str, i.stems)))
-	for i in documents: print i.stems
+			f.write(','.join(list(map(str, [i.stems.count(j) for j in terms]))) + "\n")'''
