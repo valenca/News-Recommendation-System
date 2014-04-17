@@ -2,6 +2,9 @@ from bs4 import BeautifulSoup
 import urllib
 
 url = "http://www.bbc.co.uk/news/world-europe-27065782#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa"
+url = "http://www.bbc.com/news/science-environment-26925271"
+url = "http://www.bbc.com/news/business-27049101"
+
 html = urllib.urlopen(url).read()
 
 soup = BeautifulSoup(html,'html5lib')
