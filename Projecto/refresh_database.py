@@ -62,5 +62,8 @@ for topic,url in feeds.iteritems():
 
 			if text != '':
 				print title
-				print text
+				#print text
+				sentences = [k for k in nltk.tokenize.sent_tokenize(text)]
+				for sentence in sentences:
+					print sentence
 
