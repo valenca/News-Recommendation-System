@@ -25,7 +25,7 @@ feeds = {
 
 for topic,url in feeds.iteritems():
 
-	#url = 'http://feeds.bbci.co.uk/nature/rss.xml'
+	#url = 'http://feeds.bbci.co.uk/sport/0/rss.xml'
 	html = urllib.urlopen(url).read()
 
 	soup = BeautifulSoup(html)
@@ -58,7 +58,12 @@ for topic,url in feeds.iteritems():
 			soup = BeautifulSoup(' '.join(list(map(str,paragraphs))))
 			[par.extract() for par in soup.findAll('p') if str(par).startswith('<p><strong>')]
 			[par.extract() for par in soup.findAll('p',{"class":re.compile('disclaimer|terms')})]
-			text = soup.get_text().replace('\n','')
+			text = soup.get_text().replace('\n',' ').replace('\t',' ').replace('\r',' ')
+
+			while '  ' in text:
+				text = text.replace('  ',' ')
+			if text[0] == ' ':
+				text = text[1:]
 
 			if text != '':
 				print title
