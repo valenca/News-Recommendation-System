@@ -36,15 +36,13 @@ for topic,url in feeds:
 
 	for j in range(len(items)):
 		
-		stdout.write('\r'+topics[topic-1][1]+': ('+str(j+1)+'/'+str(len(items))+')')
-		stdout.flush()
-		#print j
+		#stdout.write('\r'+topics[topic-1][1]+': ('+str(j+1)+'/'+str(len(items))+')')
+		#stdout.flush()
+		print j
 
-		if titles[j] not in titles_exist and \
-			not (titles[j].startswith(('VIDEO','AUDIO','In pictures','Your pictures'))):
+		if not (titles[j].startswith(('VIDEO','AUDIO','In pictures','Your pictures'))):
 
-			#print '-'
-			titles_exist.append(titles[j])
+			print '-'
 			url = links[j]
 			while True:
 				try:
@@ -52,7 +50,7 @@ for topic,url in feeds:
 					break
 				except IOError:
 					sleep(5)
-					#print'\nSLEEEEEP\n'
+					print'\nSLEEEEEP\n'
 
 			soup = BeautifulSoup(html)
 			title = str(soup.title)[7:-8]
@@ -65,7 +63,7 @@ for topic,url in feeds:
 				division = 'description|story-body'
 
 			if 'division' not in locals():
-				#print '\nDIVISION\n'
+				print '\nDIVISION\n'
 				continue
 
 			content = [div for div in soup.find_all('div',{'class':rcompile(division)})]
@@ -98,20 +96,19 @@ for topic,url in feeds:
 			print thumbnails[j]
 			print '\n'
 
-			titles[j] = titles[j].replace('\'','\'\'')
-			descriptions[j] = descriptions[j].replace('\'','\'\'')
-
 			date = parser.parse(dates[j])
 
-			#query = 'INSERT INTO news (n_datetime, n_link, n_thumbnail, n_title, n_description,'+\
-			#	' n_text, n_topic) VALUES (\''+str(date)+'\',\''+links[j]+'\',\''+thumbnails[j]+'\',\''+\
-			#	titles[j]+'\',\''+descriptions[j]+'\',\''+text+'\','+str(topic)+');'
-
-			database.execute('INSERT INTO news (n_datetime, n_link, n_thumbnail, n_title, n_description,'+\
-				' n_text, n_topic) VALUES (\''+str(date)+'\',\''+links[j]+'\',\''+thumbnails[j]+'\',\''+\
-				titles[j]+'\',\''+descriptions[j]+'\',\''+text+'\','+str(topic)+');')
+			if titles[j] in titles_exist:
+				database.execute('UPDATE news SET n_text = \''+text+'\' WHERE n_title = \''+titles[j].replace('\'','\'\'')+'\';')
+			else:
+				titles_exist.append(titles[j])
+				titles[j] = titles[j].replace('\'','\'\'')
+				descriptions[j] = descriptions[j].replace('\'','\'\'')
+				database.execute('INSERT INTO news (n_datetime, n_link, n_thumbnail, n_title, n_description,'+\
+					' n_text, n_topic) VALUES (\''+str(date)+'\',\''+links[j]+'\',\''+thumbnails[j]+'\',\''+\
+					titles[j]+'\',\''+descriptions[j]+'\',\''+text+'\','+str(topic)+');')
 
 			database.commit()
 
-	stdout.write('\n')
-	stdout.flush()
+	#stdout.write('\n')
+	#stdout.flush()
