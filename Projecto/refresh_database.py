@@ -62,10 +62,10 @@ for topic,url in feeds.iteritems():
 
 			while '  ' in text:
 				text = text.replace('  ',' ')
-			if text[0] == ' ':
-				text = text[1:]
 
 			if text != '':
+				if text[0] == ' ':
+					text = text[1:]
 				print title
 				#print text
 				sentences = [k for k in nltk.tokenize.sent_tokenize(text)]
