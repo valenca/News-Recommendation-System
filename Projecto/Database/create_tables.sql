@@ -15,9 +15,9 @@ CREATE TABLE news (
 	n_description TEXT NOT NULL,
 	n_text TEXT NOT NULL,
 	n_topic INTEGER NOT NULL REFERENCES topics(t_id),
-	n_rating REAL NOT NULL,
-	n_total_ratings INTEGER NOT NULL,
-	n_total_views INTEGER NOT NULL,
+	n_rating REAL NOT NULL DEFAULT 0,
+	n_total_ratings INTEGER NOT NULL DEFAULT 0,
+	n_total_views INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY (n_id)
 );
 

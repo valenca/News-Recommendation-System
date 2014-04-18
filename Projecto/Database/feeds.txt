@@ -10,7 +10,6 @@
 
 ##### Other #####
                 Sports: http://feeds.bbci.co.uk/sport/0/rss.xml
-                        http://www.bbc.co.uk/sport/0/rss.xml
                History: http://www.bbc.co.uk/history/0/rss.xml
                Capital: http://www.bbc.com/capital/feed.rss
                Science: http://www.bbc.co.uk/science/0/rss.xml
