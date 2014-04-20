@@ -11,6 +11,7 @@ from termcolor import cprint
 class Retrieval:
 
 	def __init__(self):
+
 		self.database = connect('database.db')
 		self.get_database_data()
 		self.get_rss_info()
