@@ -16,8 +16,8 @@ class Retrieval:
 		self.get_rss_info()
 		self.get_documents()
 
-		print [int(row[0]) for row in self.database.execute('SELECT doc_id FROM documents'+\
-			' WHERE doc_processed = 0;')]
+		#print [int(row[0]) for row in self.database.execute('SELECT doc_id FROM documents'+\
+		#	' WHERE doc_processed = 0;')]
 
 	def get_database_data(self):
 		self.topics, self.feeds, self.documents = [[],[],[]]
@@ -61,6 +61,8 @@ class Retrieval:
 				else:               self.thumbnails.append('')
 
 	def get_documents(self):
+		new = 0
+		updated = 0
 		for index in range(len(self.titles)):
 			print('('+str(index+1).ljust(4) + str(self.doc_topics[index]).ljust(3) + ')'),
 			
@@ -119,6 +121,7 @@ class Retrieval:
 					' doc_text = \''+text.replace('\'','\'\'')+'\''+\
 					' WHERE doc_link = \''+self.links[index]+'\';')
 				cprint('Update - '+self.titles[index],'cyan',attrs=['bold'],end='\n\b')
+				updated += 1
 			else:
 				self.documents.append([len(self.documents), self.titles[index], datetime])
 				self.database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
@@ -128,9 +131,10 @@ class Retrieval:
 					self.descriptions[index].replace('\'','\'\'')+'\',\''+\
 					text.replace('\'','\'\'')+'\','+str(self.doc_topics[index])+');')
 				cprint('Insert - '+self.titles[index],'green',attrs=['bold'],end='\n\b')
+				new += 1
 
 			self.database.commit()
-
+		print new,"new,", updated,"updated."
 if __name__ == "__main__":
 
 	Retrieval()
