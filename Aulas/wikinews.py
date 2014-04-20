@@ -178,6 +178,7 @@ if __name__ == '__main__':
 	cv_tester(tp_features)
 
 
+
 '''def csv(documents):
 	# Remove commas
 	for i in documents: i.stems = [j.replace(',','') for j in i.stems]

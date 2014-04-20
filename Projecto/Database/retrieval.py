@@ -6,6 +6,7 @@ from time import sleep
 from re import compile as rcompile, sub as rsub
 from nltk.tokenize import sent_tokenize
 from dateutil import parser
+from termcolor import cprint
 
 class Retrieval:
 
@@ -15,8 +16,8 @@ class Retrieval:
 		self.get_rss_info()
 		self.get_documents()
 
-		print [int(row[0]) for row in self.database.execute('SELECT doc_id FROM documents'+
-			 WHERE doc_processed = 0;')]
+		print [int(row[0]) for row in self.database.execute('SELECT doc_id FROM documents'+\
+			' WHERE doc_processed = 0;')]
 
 	def get_database_data(self):
 		self.topics, self.feeds, self.documents = [[],[],[]]
@@ -67,7 +68,7 @@ class Retrieval:
 			try:
 				pos = [doc[2] for doc in self.documents].index(self.links[index])
 				if str(datetime) == str(self.documents[pos][1]):
-					print('Same article')
+					cprint('Unchanged Article','white',end='\n\b')
 					continue
 				refresh = 1
 			except:
@@ -75,7 +76,7 @@ class Retrieval:
 
 			not_article = ('VIDEO','AUDIO','In pictures','Your pictures')
 			if self.titles[index].startswith(not_article):
-				print('Not article')
+				cprint('Not an Article','yellow',end='\n\b')
 				continue
 
 			html = urlopen(self.links[index]).read()
@@ -86,7 +87,7 @@ class Retrieval:
 			if any(i in title for i in temp): division = 'story-body'
 			elif 'BBC Sport' in title:        division = 'article'
 			elif 'BBC - Capital' in title:    division = 'description|story-body'
-			else:                             print('Website not known'); continue
+			else:                             cprint('Website not known','red',end='\n\b'); continue
 
 			content = [div for div in soup.find_all('div',{'class':rcompile(division)})]
 			soup = BeautifulSoup(' '.join(list(map(str,content))))
@@ -98,7 +99,7 @@ class Retrieval:
 			text = soup.get_text().replace('\n',' ').replace('\t',' ').replace('\r',' ')
 			text = text.encode('ascii', errors='ignore')
 			if text == '':
-				print('Empty text')
+				cprint('Empty Text','yellow',end='\n\b')
 				continue
 
 			rsub(' +',' ',text)
@@ -117,7 +118,7 @@ class Retrieval:
 					' doc_description = \''+self.descriptions[index].replace('\'','\'\'')+'\','+\
 					' doc_text = \''+text.replace('\'','\'\'')+'\''+\
 					' WHERE doc_link = \''+self.links[index]+'\';')
-				print('Update - '+self.titles[index])
+				cprint('Update - '+self.titles[index],'cyan',attrs=['bold'],end='\n\b')
 			else:
 				self.documents.append([len(self.documents), self.titles[index], datetime])
 				self.database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
@@ -126,9 +127,9 @@ class Retrieval:
 					self.titles[index].replace('\'','\'\'')+'\',\''+\
 					self.descriptions[index].replace('\'','\'\'')+'\',\''+\
 					text.replace('\'','\'\'')+'\','+str(self.doc_topics[index])+');')
-				print('Insert - '+self.titles[index])
+				cprint('Insert - '+self.titles[index],'green',attrs=['bold'],end='\n\b')
 
-		self.database.commit()
+			self.database.commit()
 
 if __name__ == "__main__":
 
