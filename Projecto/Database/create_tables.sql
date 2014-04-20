@@ -9,6 +9,7 @@ CREATE TABLE users (
 
 CREATE TABLE documents (
 	doc_id INTEGER NOT NULL,
+	doc_processed INTEGER NOT NULL DEFAULT 0,
 	doc_datetime DATETIME NOT NULL,
 	doc_link TEXT NOT NULL,
 	doc_thumbnail TEXT NOT NULL,

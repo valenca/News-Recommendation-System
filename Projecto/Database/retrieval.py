@@ -9,11 +9,14 @@ from dateutil import parser
 
 class Retrieval:
 
-	def __init__(self, indexes):
+	def __init__(self):
 		self.database = connect('database.db')
 		self.get_database_data()
 		self.get_rss_info()
-		self.get_documents(indexes)
+		self.get_documents()
+
+		print [int(row[0]) for row in self.database.execute('SELECT doc_id FROM documents'+
+			 WHERE doc_processed = 0;')]
 
 	def get_database_data(self):
 		self.topics, self.feeds, self.documents = [[],[],[]]
@@ -56,7 +59,7 @@ class Retrieval:
 				if len(thumb) == 1: self.thumbnails.append(thumb[0]['url'].encode('ascii',errors='ignore'))
 				else:               self.thumbnails.append('')
 
-	def get_documents(self, indexes):
+	def get_documents(self):
 		for index in range(len(self.titles)):
 			print('('+str(index+1).ljust(4) + str(self.doc_topics[index]).ljust(3) + ')'),
 			
@@ -107,7 +110,8 @@ class Retrieval:
 			text = title + '\n' + text
 
 			if refresh == 1:
-				self.database.execute('UPDATE documents SET doc_datetime = \''+str(datetime)+'\','+\
+				self.database.execute('UPDATE documents SET doc_processed = 0,'+
+					' doc_datetime = \''+str(datetime)+'\','+\
 					' doc_thumbnail = \''+self.thumbnails[index]+'\','+\
 					' doc_title = \''+self.titles[index].replace('\'','\'\'')+'\','+\
 					' doc_description = \''+self.descriptions[index].replace('\'','\'\'')+'\','+\
@@ -124,12 +128,8 @@ class Retrieval:
 					text.replace('\'','\'\'')+'\','+str(self.doc_topics[index])+');')
 				print('Insert - '+self.titles[index])
 
-			self.database.commit()
-
-			indexes.append(index+1)
+		self.database.commit()
 
 if __name__ == "__main__":
 
-	indexes = []
-	Retrieval(indexes)
-	print indexes
+	Retrieval()
