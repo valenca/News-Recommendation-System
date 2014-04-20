@@ -52,13 +52,13 @@ def retrieve():
 		#new = 0
 		#updated = 0
 		for index in range(len(titles)):
-			print(gprint('('+str(index+1).ljust(4) + str(doc_topics[index]).ljust(3) + ')', 'lgrey')),
+			print('('+str(index+1).ljust(4) + str(doc_topics[index]).ljust(2) + ')'),
 			
 			datetime = parser.parse(datetimes[index])
 			try:
 				pos = [doc[2] for doc in documents].index(links[index])
 				if str(datetime) == str(documents[pos][1]):
-					print(gprint('Unchanged Article','yellow'))
+					print('Unchanged Article')
 					continue
 				refresh = 1
 			except:
@@ -66,7 +66,7 @@ def retrieve():
 
 			not_article = ('VIDEO','AUDIO','In pictures','Your pictures')
 			if titles[index].startswith(not_article):
-				print(gprint('Not an Article', 'orange'))
+				print('Not an Article')
 				continue
 
 			html = urlopen(links[index]).read()
@@ -77,7 +77,7 @@ def retrieve():
 			if any(i in title for i in temp): division = 'story-body'
 			elif 'BBC Sport' in title:        division = 'article'
 			elif 'BBC - Capital' in title:    division = 'description|story-body'
-			else:                             print(gprint('Website not known','red')); continue
+			else:                             print('Website not known'); continue
 
 			content = [div for div in soup.find_all('div',{'class':rcompile(division)})]
 			soup = BeautifulSoup(' '.join(list(map(str,content))))
@@ -89,7 +89,7 @@ def retrieve():
 			text = soup.get_text().replace('\n',' ').replace('\t',' ').replace('\r',' ')
 			text = text.encode('ascii', errors='ignore')
 			if text == '':
-				print(gprint('Empty Text','brown'))
+				print('Empty Text')
 				continue
 
 			rsub(' +',' ',text)
@@ -108,7 +108,7 @@ def retrieve():
 					' doc_description = \''+descriptions[index].replace('\'','\'\'')+'\','+\
 					' doc_text = \''+text.replace('\'','\'\'')+'\''+\
 					' WHERE doc_link = \''+links[index]+'\';')
-				print(gprint('Update - '+titles[index], 'blue'))
+				print('Update - '+titles[index])
 				#updated += 1
 			else:
 				documents.append([len(documents), titles[index], datetime])
@@ -118,7 +118,7 @@ def retrieve():
 					titles[index].replace('\'','\'\'')+'\',\''+\
 					descriptions[index].replace('\'','\'\'')+'\',\''+\
 					text.replace('\'','\'\'')+'\','+str(doc_topics[index])+');')
-				print(gprint('Insert - '+titles[index], 'green'))
+				print('Insert - '+titles[index])
 				#new += 1
 
 			database.commit()
