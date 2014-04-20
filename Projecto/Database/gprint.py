@@ -24,4 +24,4 @@ def gprint(string, colour='white',bold=False):
 		colour = colours[colour]
 	else:
 		colour = '255'
-	return '\033[38;05;' + colour + 'm' + string + '\033[0m'		
+	return '\033[38;05;' + colour + 'm' + string + '\033[0m'
