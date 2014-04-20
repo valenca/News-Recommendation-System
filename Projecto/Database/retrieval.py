@@ -114,7 +114,7 @@ class Retrieval:
 					' doc_description = \''+self.descriptions[index].replace('\'','\'\'')+'\','+\
 					' doc_text = \''+text.replace('\'','\'\'')+'\''+\
 					' WHERE doc_link = \''+self.links[index]+'\';')
-				cprint('Update - '+self.titles[index],cyan,attrs=['bold'])
+				cprint('Update - '+self.titles[index],'cyan',attrs=['bold'])
 			else:
 				self.documents.append([len(self.documents), self.titles[index], datetime])
 				self.database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
