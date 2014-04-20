@@ -1,8 +1,8 @@
-INSERT INTO topics (t_name) VALUES ('Business'),('Politics'),('Health'),('Education'),
+INSERT INTO topics (tpc_name) VALUES ('Business'),('Politics'),('Health'),('Education'),
 		('Science & Environment'),('Technology'),('Entertainment & Arts'),('Magazine'),
 		('History'),('Consumer'),('Arts & Culture'),('Nature'),('Sports'),('Capital');
 
-INSERT INTO feeds (f_topic, f_link) VALUES
+INSERT INTO feeds (fds_topic, fds_link) VALUES
 	(1, 'http://feeds.bbci.co.uk/news/business/rss.xml'),
 	(2, 'http://feeds.bbci.co.uk/news/politics/rss.xml'),
 	(3, 'http://feeds.bbci.co.uk/news/health/rss.xml'),
