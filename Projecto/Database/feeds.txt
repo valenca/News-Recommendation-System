@@ -1,0 +1,141 @@
+##### NEWS #####
+              Business: http://feeds.bbci.co.uk/news/business/rss.xml
+              Politics: http://feeds.bbci.co.uk/news/politics/rss.xml
+                Health: http://feeds.bbci.co.uk/news/health/rss.xml
+             Education: http://feeds.bbci.co.uk/news/education/rss.xml
+ Science & Environment: http://feeds.bbci.co.uk/news/science_and_environment/rss.xml
+            Technology: http://feeds.bbci.co.uk/news/technology/rss.xml
+  Entertainment & Arts: http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml
+              Magazine: http://feeds.bbci.co.uk/news/magazine/rss.xml
+
+##### Other #####
+                Sports: http://feeds.bbci.co.uk/sport/0/rss.xml
+               History: http://www.bbc.co.uk/history/0/rss.xml
+               Capital: http://www.bbc.com/capital/feed.rss
+               Science: http://www.bbc.co.uk/science/0/rss.xml
+                Nature: http://feeds.bbci.co.uk/nature/rss.xml
+              Consumer: http://www.bbc.co.uk/consumer/rss.xml
+        Arts & Culture: http://www.bbc.co.uk/arts/0/rss.xml
+
+##### FUTURE ######
+                Future: http://www.bbc.com/future/feed.rss
+
+Sections:
+                Health: http://www.bbc.com/future/sections/health/feed.rss
+ Science & Environment: http://www.bbc.com/future/sections/science-environment/feed.rss
+            Technology: http://www.bbc.com/future/sections/technology/feed.rss
+
+Columns:
+
+        60 Second Idea: http://www.bbc.com/future/columns/60-second-idea/feed.rss
+       Best of the Web: http://www.bbc.com/future/columns/best-of-the-web/feed.rss
+       Future Thinking: http://www.bbc.com/future/columns/future-thinking/feed.rss
+          Head Squeeze: http://www.bbc.com/future/columns/head-squeeze/feed.rss
+            HyperDrive: http://www.bbc.com/future/columns/hyperdrive/feed.rss
+              In Depth: http://www.bbc.com/future/columns/in-depth/feed.rss
+        Life:Connected: http://www.bbc.com/future/columns/life-connected/feed.rss
+ Matter of Life & Tech: http://www.bbc.com/future/columns/a-matter-of-life-and-tech/feed.rss
+         Medical Myths: http://www.bbc.com/future/columns/medical-myths/feed.rss
+         Mosaic@Future: http://www.bbc.com/future/columns/mosaicfuture/feed.rss
+            Neurohacks: http://www.bbc.com/future/columns/neurohacks/feed.rss
+       Power of Nature: http://www.bbc.com/future/columns/power-of-nature/feed.rss
+       Science/Fiction: http://www.bbc.com/future/columns/sciencefiction/feed.rss
+          Smart Planet: http://www.bbc.com/future/columns/smart-planet/feed.rss
+         Space Station: http://www.bbc.com/future/columns/space-station/feed.rss
+       Under the Radar: http://www.bbc.com/future/columns/under-the-radar/feed.rss
+        Uniquely Human: http://www.bbc.com/future/columns/uniquely-human/feed.rss
+         Will We Ever?: http://www.bbc.com/future/columns/will-we-ever/feed.rss
+  World-Changing Ideas: http://www.bbc.com/future/columns/world-changing-ideas/feed.rss
+      Tomorrow's Lives: http://www.bbc.com/future/columns/tomorrows-lives/feed.rss
+   Last Place on Earth: http://www.bbc.com/future/columns/last-place-on-earth/feed.rss
+          Beyond Human: http://www.bbc.com/future/columns/beyond-human/feed.rss
+              Code Red: http://www.bbc.com/future/columns/code-red/feed.rss
+          Imagineering: http://www.bbc.com/future/columns/imagineering/feed.rss
+     The Paleofuturist: http://www.bbc.com/future/columns/paleofuture/feed.rss
+       Nature's Tricks: http://www.bbc.com/future/columns/natures-tricks/feed.rss
+              Horizons: http://www.bbc.com/future/columns/horizons/feed.rss
+         The Real Risk: http://www.bbc.com/future/columns/the-real-risk/feed.rss
+
+60 Second Idea
+A global thinker from the world of philosophy, science or the arts is given a minute to put forward a radical, inspiring or controversial idea – no matter how improbable - that they believe will change the world.
+
+Best of the Web
+The week’s must-reads from around the web. Feed your mind with the pick of the most recent science and technology stories, selected by The Browser.
+
+Future Thinking
+Ideas that can change lives. Renowned inventors, scientists and futurologists describe the big idea that they want to solve and how it can transform the world.
+
+Head Squeeze
+Answers to your burning questions. Top Gear’s James May and his crack team break down everything from everyday curiosities to the latest discoveries.
+
+HyperDrive
+The future of transport. BBC presenter and trained engineer Jack Stewart sorts solar planes from magnetic trains, offering you a guide to the vehicles and transport technologies of tomorrow.
+
+In Depth
+Take a deep dive into the big stories in science, technology and health written by some of the best writers around.
+
+Life:Connected
+How the wired world is shaping our lives. Commentator and writer Tom Chatfield unpicks how digital culture and technologies pervade everything we do and offers his thoughts on how it is changing them.
+
+Matter of Life & Tech
+Ideas and technology that could change the world. Hi-tech or low tech, developing or developed world, we profile the innovators and inventors who are finding solutions to the world’s problems.
+
+Medical Myths
+Urban myths and old wives tales under the microscope. Medical broadcaster Claudia Hammond busts misconceptions and untruths in the world of health.
+
+Mosaic@Future
+Exploring the science of life. A new publication from the Wellcome Trust, Mosaic’s in-depth articles and films tell the stories behind biomedical research and its impact on society. Republished here under a Creative Commons licence.
+
+Neurohacks
+Neuroscience and the psychology of the everyday. Psychologist Tom Stafford explores the surprisingly complex theories behind experiences we all take for granted.
+
+Power of Nature
+Uncovering the value of the planet’s hidden treasures. Why there is more to the Earth’s great wild places than just their natural beauty.
+
+Science/Fiction
+Where science meets pop culture. Science broadcaster and film critic Quentin Cooper takes a sideways look at trends and debates in science and how they are often foreshadowed in films, TV and books.
+
+Smart Planet
+Choices for the future of the human planet. Science and environment writer Gaia Vince takes you on a journey through the Anthropocene – the age of man – identifying the planets limits and what we can do about them.
+
+Space Station
+Tales from the new space race. Broadcaster and self-confessed space nerd Richard Hollingham gives a personal view from mission control, exploring man’s continued obsession with the final frontier.
+
+Under the Radar
+Uncovering today’s unsung scientific discoveries. Science writer Phil Ball trawls through the mass of scientific literature, uncovering developments and breakthroughs that could impact all our futures.
+
+Uniquely Human
+Our animal behaviour uncovered. Jason G. Goldman explores how the quirks, traits and characteristics we think set us apart from other species may not be so special after all.
+
+Will We Ever?
+Burning questions in science and beyond. Leading writers and bloggers look beyond the hype to find out if there is any truth behind some of today’s most intriguing questions.
+
+World-Changing Ideas
+Radical views for transforming our future. The world’s greatest minds push the limits of their imagination by tackling the biggest challenge or opportunity faced in their field.
+
+Tomorrow's Lives
+The people living the future today. Rose Eveleth meets those witnessing the forefront of science and technology, and their personal experiences reveal what may be possible for all of us.
+
+Last Place on Earth
+A grand tour of our planet’s last outposts. In a rapidly changing world, writer Rachel Nuwer sets out to find the last remaining places, people, technologies and resources of their kind.
+
+Beyond Human
+How technology is enhancing the body and mind. Writer Frank Swain explores the social, legal, and ethical impact of devices and prosthetics that promise to augment our natural abilities, senses and brainpower.
+
+Code Red
+Where science, security and secrets collide. Defence writer Sharon Weinberger goes behind the closed doors of the labs and projects working on the future of national security.
+
+Imagineering
+Redesigning the everyday. BBC Future works with top designers to rethink common objects and offer 21st Century solutions.
+
+The Paleofuturist
+Unearthing the future that never was. Retrofuturist Matt Novak explores dusty archives to uncover the technologies, lifestyles and ideas imagined by the thinkers of the past and explores why they never came to pass.
+
+Nature's Tricks
+Design and innovation inspired by the natural world. Emily Anthes investigates the scientists, architects and engineers taking cues from nature’s ingenuity to create a better blueprint for our world.
+
+Horizons
+What will be the greatest challenges facing the planet over the next decade, who will solve them, and how? In this video series, Adam Shaw travels the world in search of answers.
+
+The Real Risk
+The odds you need to know. Statistician David Spiegelhalter crunches the numbers on everything from car crashes to asteroids to reveal what is worth worrying about.
