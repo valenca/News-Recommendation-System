@@ -49,8 +49,8 @@ def retrieve():
 				else:               thumbnails.append('')
 
 	def get_documents():
-		#new = 0
-		#updated = 0
+		new = 0
+		updated = 0
 		for index in range(len(titles)):
 			print('('+str(index+1).ljust(4) + str(doc_topics[index]).ljust(2) + ')'),
 			
@@ -109,7 +109,7 @@ def retrieve():
 					' doc_text = \''+text.replace('\'','\'\'')+'\''+\
 					' WHERE doc_link = \''+links[index]+'\';')
 				print('Update - '+titles[index])
-				#updated += 1
+				updated += 1
 			else:
 				documents.append([len(documents), titles[index], datetime])
 				database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
@@ -119,10 +119,10 @@ def retrieve():
 					descriptions[index].replace('\'','\'\'')+'\',\''+\
 					text.replace('\'','\'\'')+'\','+str(doc_topics[index])+');')
 				print('Insert - '+titles[index])
-				#new += 1
+				new += 1
 
 			database.commit()
-		#print new,"new,", updated,"updated."
+		print new,"new,", updated,"updated."
 	
 	database = connect('database.db')
 	topics,feeds,documents,titles,descriptions = [[],[],[],[],[]]
