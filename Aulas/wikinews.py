@@ -75,7 +75,7 @@ def tagger(documents):
 		i.tags_t = [j for j in i.tags_t if j[0] not in nltk.corpus.stopwords.words('english')]
 
 	# Remove any other tags
-	remove_list = ['POS','PRP','PRP$','IN','TO','CC','DT']
+	remove_list = ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']
 	for i in documents:
 		i.tags = [j[0] for j in i.tags_t if j[1] not in remove_list]
 	
