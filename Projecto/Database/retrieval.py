@@ -92,10 +92,6 @@ def retrieve():
 		rsub(' +',' ',text)
 		text = text.strip()
 		text = '\n'.join([sentence for sentence in sent_tokenize(text)])
-		title = title.split('-')[-1]
-		rsub(' +',' ',title)
-		title = title.strip()
-		text = title + '\n' + text
 
 		if refresh == 1:
 			database.execute('UPDATE documents SET doc_processed = 0,'+
