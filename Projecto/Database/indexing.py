@@ -52,7 +52,7 @@ def index():
 
 	
 	for n,doc in enumerate(documents):
-		print n
+		print(n, doc.id)
 
 		### GET TOKENS
 		[doc.tokens['title'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.title)]
@@ -90,6 +90,7 @@ def index():
 		database.execute('UPDATE documents SET doc_processed = 1 WHERE doc_id = '+str(doc.id)+';')
 		database.commit()
 
+	print('Optimizing ...')
 	index.optimize()
 
 if __name__ == "__main__":
