@@ -33,7 +33,6 @@ def index():
 						topic=TEXT(field_boost=3))
 		create_in('Index', schema)
 	index = open_dir('Index')
-	writer = index.writer()
 
 	### GET DATABASE DATA
 	for row in database.execute('SELECT doc_id, doc_datetime, doc_title, doc_description, doc_text,'+\
@@ -77,6 +76,7 @@ def index():
 			doc.terms[f] = [str(lemmatizer.lemmatize(t)) for t in doc.terms[f]]
 
 		### INDEX DOCUMENT
+		writer = index.writer()
 		writer.update_document(id = doc.id,
 			                   datetime = parser.parse(doc.datetime),
 			                   title = doc.terms['title'],
