@@ -54,7 +54,7 @@ def index():
 
 
 	print(len(documents))
-	for n,doc in enumerate(documents):
+	for n,doc in enumerate(documents[0:1]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 
 		### GET TOKENS
@@ -77,6 +77,11 @@ def index():
 				except: doc.terms[f].append(postag[0])
 			doc.terms[f] = [lower(t) if t not in doc.entities[f] else t for t in doc.terms[f]]
 			doc.terms[f] = [str(lemmatizer.lemmatize(t)) for t in doc.terms[f]]
+
+			print(doc.terms[f])
+
+		import sys
+		sys.exit()
 
 		### INDEX DOCUMENT
 		writer = index.writer()
