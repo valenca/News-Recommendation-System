@@ -30,7 +30,7 @@ def index():
 						title=TEXT(field_boost=20),
 						description=TEXT(field_boost=10),
 						text=TEXT(field_boost=6),
-						topic=TEXT(field_boost=3))
+						topics=TEXT(field_boost=3))
 		create_in('Index', schema)
 	index = open_dir('Index')
 
@@ -84,7 +84,7 @@ def index():
 			                   title = doc.terms['title'],
 			                   description = doc.terms['desc'],
 			                   text = doc.terms['text'],
-			                   topic = list(map(unicode,list(map(lower,doc.topics)))))
+			                   topics = list(map(unicode,list(map(lower,doc.topics)))))
 		writer.commit()
 
 		### UPDATE DB
