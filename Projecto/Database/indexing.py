@@ -22,7 +22,6 @@ class Document:
 def index():
 	database = connect('database.db')
 	documents = []
-
 	if not os.path.isdir("Index"):
 		os.mkdir("Index")
 		schema = Schema(id=NUMERIC(stored=True,unique=True),
@@ -50,9 +49,9 @@ def index():
 	replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not'}
 	lemmatizer = wordnet.WordNetLemmatizer()
 
-	
+	print(len(documents))
 	for n,doc in enumerate(documents):
-		print(n, doc.id)
+		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 
 		### GET TOKENS
 		[doc.tokens['title'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.title)]

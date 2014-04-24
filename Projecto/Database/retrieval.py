@@ -94,6 +94,7 @@ def retrieve():
 		text = '\n'.join([sentence for sentence in sent_tokenize(text)])
 
 		if refresh == 1:
+			documents[pos][1] = str(datetime)
 			database.execute('UPDATE documents SET doc_processed = 0,'+
 				' doc_datetime = \''+str(datetime)+'\','+\
 				' doc_thumbnail = \''+thumbnails[index]+'\','+\
@@ -104,7 +105,7 @@ def retrieve():
 			print('Update - '+titles[index])
 			updated += 1
 		else:
-			documents.append([len(documents), titles[index], datetime])
+			documents.append([len(documents), datetime, links[index]])
 			database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
 				' doc_title, doc_description, doc_text, doc_topic) VALUES (\''+\
 				str(datetime)+'\',\''+links[index]+'\',\''+thumbnails[index]+'\',\''+\
