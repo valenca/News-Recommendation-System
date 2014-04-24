@@ -14,6 +14,7 @@ import os.path
 class Document:
 
 	def __init__(self):
+		self.topics = []
 		self.tokens = {'title':[],'desc':[],'text':[]}
 		self.postags = {'title':[],'desc':[],'text':[]}
 		self.entities = {}
@@ -34,15 +35,17 @@ def index():
 	index = open_dir('Index')
 
 	### GET DATABASE DATA
-	for row in database.execute('SELECT doc_id, doc_datetime, doc_title, doc_description, doc_text,'+\
-		' tpc_name FROM documents, topics WHERE tpc_id = doc_topic and doc_processed = 0;'):
+	for row in database.execute('SELECT doc_id, doc_datetime, doc_title, doc_description, doc_text'+\
+		' FROM documents WHERE doc_processed = 0;'):
 		documents.append(Document())
 		documents[-1].id = row[0]
 		documents[-1].datetime = str(row[1])
 		documents[-1].title = str(row[2])
 		documents[-1].description = str(row[3])
 		documents[-1].text = str(row[4])
-		documents[-1].topic = str(row[5])
+		for row2 in database.execute('SELECT tpc_name FROM topics, tpc_doc WHERE tpd_document = '+\
+			str(row[0])+' AND tpc_id = tpd_topic;'):
+			documents[-1].topics.append((str(row2[0])))
 
 	punct = list(punctuation)+['``','\'\'','...']
 	remove_list = ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']
@@ -81,8 +84,7 @@ def index():
 			                   title = doc.terms['title'],
 			                   description = doc.terms['desc'],
 			                   text = doc.terms['text'],
-			                   topic = unicode(lower(doc.topic)),
-			                   )
+			                   topic = list(map(unicode,list(map(lower,doc.topics)))))
 		writer.commit()
 
 		### UPDATE DB

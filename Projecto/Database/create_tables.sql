@@ -16,7 +16,6 @@ CREATE TABLE documents (
 	doc_title TEXT NOT NULL,
 	doc_description TEXT NOT NULL,
 	doc_text TEXT NOT NULL,
-	doc_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
 	doc_rating REAL NOT NULL DEFAULT 2.5,
 	doc_nratings INTEGER NOT NULL DEFAULT 0,
 	doc_nviews INTEGER NOT NULL DEFAULT 0,
@@ -27,6 +26,12 @@ CREATE TABLE topics (
 	tpc_id INTEGER NOT NULL,
 	tpc_name TEXT NOT NULL,
 	PRIMARY KEY (tpc_id)
+);
+
+CREATE TABLE tpc_doc (
+	tpd_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
+	tpd_document INTEGER NOT NULL REFERENCES documents(doc_id),
+	PRIMARY KEY (tpd_topic, tpd_document)
 );
 
 CREATE TABLE feeds (
