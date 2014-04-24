@@ -34,7 +34,13 @@ def index():
 	replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not'}
 	lemmatizer = wordnet.WordNetLemmatizer()
 
-	for j,document in enumerate(documents):
+	for j,document in enumerate(documents[0:2]):
+
+		print document[j]
+
+
+		continue
+
 		print j
 		### GET TOKENS
 		[document.tokens.append([t for t in word_tokenize(s)]) for s in sent_tokenize(document.text)]
