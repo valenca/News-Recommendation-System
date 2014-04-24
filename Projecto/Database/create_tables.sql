@@ -16,7 +16,6 @@ CREATE TABLE documents (
 	doc_title TEXT NOT NULL,
 	doc_description TEXT NOT NULL,
 	doc_text TEXT NOT NULL,
-	doc_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
 	doc_rating REAL NOT NULL DEFAULT 2.5,
 	doc_nratings INTEGER NOT NULL DEFAULT 0,
 	doc_nviews INTEGER NOT NULL DEFAULT 0,
@@ -27,6 +26,12 @@ CREATE TABLE topics (
 	tpc_id INTEGER NOT NULL,
 	tpc_name TEXT NOT NULL,
 	PRIMARY KEY (tpc_id)
+);
+
+CREATE TABLE tpc_doc (
+	tpd_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
+	tpd_document INTEGER NOT NULL REFERENCES documents(doc_id),
+	PRIMARY KEY (tpd_topic, tpd_document)
 );
 
 CREATE TABLE feeds (
@@ -47,7 +52,6 @@ CREATE TABLE marks (
 	mrk_document INTEGER NOT NULL REFERENCES documents(doc_id),
 	PRIMARY KEY (mrk_tag, mrk_document)
 );
- 
 
 CREATE TABLE historics (
 	hst_user INTEGER NOT NULL REFERENCES users(usr_id),
@@ -67,10 +71,10 @@ CREATE TABLE tpc_preferences (
 );
 
 CREATE TABLE tgs_preferences (
-	tgs_user INTEGER NOT NULL REFERENCES users(usr_id),
-	tgs_tag INTEGER NOT NULL REFERENCES tags(tgs_id),
-	tgs_nviews INTEGER NOT NULL DEFAULT 0,
-	tgs_rating REAL NOT NULL DEFAULT 2.5,
-	tgs_nratings INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY (tgs_user, tgs_tag)
+	tgp_user INTEGER NOT NULL REFERENCES users(usr_id),
+	tgp_tag INTEGER NOT NULL REFERENCES tags(tgs_id),
+	tgp_nviews INTEGER NOT NULL DEFAULT 0,
+	tgp_rating REAL NOT NULL DEFAULT 2.5,
+	tgp_nratings INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY (tgp_user, tgp_tag)
 );

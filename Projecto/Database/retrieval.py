@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from re import compile as rcompile, sub as rsub
 from nltk.tokenize import sent_tokenize
 from dateutil import parser
+from sys import exit
 
 def retrieve():
 	database = connect('database.db')
@@ -16,7 +17,9 @@ def retrieve():
 	for row in database.execute('SELECT fds_topic, fds_link FROM feeds;'):
 		feeds.append([row[0],str(row[1])])		
 	for row in database.execute('SELECT doc_id, doc_datetime, doc_link FROM documents'):
-		documents.append([row[0],str(row[1]),str(row[2])])
+		documents.append([row[0],str(row[1]),str(row[2]),[]])
+		for row2 in database.execute('SELECT tpd_topic FROM tpc_doc WHERE tpd_document = '+str(row[0])+';'):
+			documents[-1][3].append(row2[0])
 
 	### GET RSS INFO
 	for topic, link in feeds:
@@ -54,12 +57,20 @@ def retrieve():
 		datetime = parser.parse(datetimes[index])
 		try:
 			pos = [doc[2] for doc in documents].index(links[index])
+		except:
+			refresh = 0
+		else:
+			if doc_topics[index] not in documents[pos][3]:
+				database.execute('INSERT INTO tpc_doc (tpd_topic, tpd_document) VALUES'+\
+					' ('+str(doc_topics[index])+', '+str(documents[pos][0])+');')
+				documents[pos][3].append(doc_topics[index])
+				database.commit()
+				print('*'),
 			if str(datetime) == str(documents[pos][1]):
 				print('Unchanged Article')
 				continue
 			refresh = 1
-		except:
-			refresh = 0
+
 
 		not_article = ('VIDEO','AUDIO','In pictures','Your pictures')
 		if titles[index].startswith(not_article):
@@ -92,12 +103,9 @@ def retrieve():
 		rsub(' +',' ',text)
 		text = text.strip()
 		text = '\n'.join([sentence for sentence in sent_tokenize(text)])
-		title = title.split('-')[-1]
-		rsub(' +',' ',title)
-		title = title.strip()
-		text = title + '\n' + text
 
 		if refresh == 1:
+			documents[pos][1] = str(datetime)
 			database.execute('UPDATE documents SET doc_processed = 0,'+
 				' doc_datetime = \''+str(datetime)+'\','+\
 				' doc_thumbnail = \''+thumbnails[index]+'\','+\
@@ -108,13 +116,15 @@ def retrieve():
 			print('Update - '+titles[index])
 			updated += 1
 		else:
-			documents.append([len(documents), titles[index], datetime])
+			documents.append([len(documents)+1, datetime, links[index],[doc_topics[index]]])
+			database.execute('INSERT INTO tpc_doc (tpd_topic, tpd_document) VALUES'+\
+					' ('+str(doc_topics[index])+', '+str(documents[-1][0])+');')
 			database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
-				' doc_title, doc_description, doc_text, doc_topic) VALUES (\''+\
+				' doc_title, doc_description, doc_text) VALUES (\''+\
 				str(datetime)+'\',\''+links[index]+'\',\''+thumbnails[index]+'\',\''+\
 				titles[index].replace('\'','\'\'')+'\',\''+\
 				descriptions[index].replace('\'','\'\'')+'\',\''+\
-				text.replace('\'','\'\'')+'\','+str(doc_topics[index])+');')
+				text.replace('\'','\'\'')+'\');')
 			print('Insert - '+titles[index])
 			new += 1
 
