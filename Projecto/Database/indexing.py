@@ -10,6 +10,8 @@ from whoosh.fields import Schema, NUMERIC, DATETIME, TEXT
 from whoosh.index import create_in, open_dir
 from dateutil import parser
 import os.path
+from gensim.models.ldamodel import LdaModel
+from gensim.corpora.dictionary import Dictionary
 
 class Document:
 
@@ -23,6 +25,7 @@ class Document:
 def index():
 	database = connect('database.db')
 	documents = []
+	texts = []
 	if not os.path.isdir("Index"):
 		os.mkdir("Index")
 		schema = Schema(id=NUMERIC(stored=True,unique=True),
@@ -54,7 +57,7 @@ def index():
 
 
 	print(len(documents))
-	for n,doc in enumerate(documents[0:1]):
+	for n,doc in enumerate(documents[:100]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 
 		### GET TOKENS
@@ -78,10 +81,11 @@ def index():
 			doc.terms[f] = [lower(t) if t not in doc.entities[f] else t for t in doc.terms[f]]
 			doc.terms[f] = [str(lemmatizer.lemmatize(t)) for t in doc.terms[f]]
 
-			print(doc.terms[f])
+			#print(doc.terms[f])
+		
+		texts.append(doc.terms['text'])
 
 		import sys
-		sys.exit()
 
 		### INDEX DOCUMENT
 		writer = index.writer()
@@ -99,6 +103,11 @@ def index():
 
 	print('Optimizing ...')
 	index.optimize()
+	
+	dictionary=Dictionary(texts)
+	corpus=[dictionary.doc2bow(text) for text in texts]
+	lda = LdaModel(corpus,num_topics=30,id2word=dictionary);	
+	pprint(lda.print_topics(30))
 
 if __name__ == "__main__":
 	index()
