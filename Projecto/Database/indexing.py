@@ -57,7 +57,7 @@ def index():
 
 
 	print(len(documents))
-	for n,doc in enumerate(documents[:100]):
+	for n,doc in enumerate(documents[:10]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 
 		### GET TOKENS
@@ -107,7 +107,7 @@ def index():
 	dictionary=Dictionary(texts)
 	corpus=[dictionary.doc2bow(text) for text in texts]
 	lda = LdaModel(corpus,num_topics=30,id2word=dictionary);	
-	pprint(lda.print_topics(30))
+	pprint(lda.print_topics())
 
 if __name__ == "__main__":
 	index()
