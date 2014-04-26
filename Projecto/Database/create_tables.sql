@@ -34,6 +34,12 @@ CREATE TABLE tpc_doc (
 	PRIMARY KEY (tpd_topic, tpd_document)
 );
 
+CREATE TABLE themes (
+	thm_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
+	thm_document INTEGER NOT NULL REFERENCES documents(doc_id),
+	PRIMARY KEY (thm_topic, thm_document)
+);
+
 CREATE TABLE feeds (
 	fds_id INTEGER NOT NULL,
 	fds_topic INTEGER NOT NULL REFERENCES topics(tpc_id),
