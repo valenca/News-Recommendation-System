@@ -106,7 +106,9 @@ def retrieve():
 
 		if refresh == 1:
 			documents[pos][1] = str(datetime)
-			database.execute('UPDATE documents SET doc_processed = 0,'+
+			database.execute('DELETE FROM marks WHERE mrk_document = '+str(documents[pos][0])+';')
+			database.execute('DELETE FROM themes WHERE thm_document = '+str(documents[pos][0])+';')
+			database.execute('UPDATE documents SET doc_processed = 0,'+\
 				' doc_datetime = \''+str(datetime)+'\','+\
 				' doc_thumbnail = \''+thumbnails[index]+'\','+\
 				' doc_title = \''+titles[index].replace('\'','\'\'')+'\','+\
@@ -118,7 +120,7 @@ def retrieve():
 		else:
 			documents.append([len(documents)+1, datetime, links[index],[doc_topics[index]]])
 			database.execute('INSERT INTO tpc_doc (tpd_topic, tpd_document) VALUES'+\
-					' ('+str(doc_topics[index])+', '+str(documents[-1][0])+');')
+				' ('+str(doc_topics[index])+', '+str(documents[-1][0])+');')
 			database.execute('INSERT INTO documents (doc_datetime, doc_link, doc_thumbnail,'+\
 				' doc_title, doc_description, doc_text) VALUES (\''+\
 				str(datetime)+'\',\''+links[index]+'\',\''+thumbnails[index]+'\',\''+\
