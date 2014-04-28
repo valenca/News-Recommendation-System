@@ -11,6 +11,7 @@ from whoosh.index import create_in, open_dir
 from dateutil import parser
 from cPickle import load, dump
 from nltk.classify import DecisionTreeClassifier
+from collections import Counter
 import os.path
 
 class Document:
@@ -109,6 +110,7 @@ class Tags:
 		pass
 
 	def get_tags(self, doc):
+		print Counter(doc.terms['text']).most_common(30)
 		pass
 
 class Themes:
@@ -155,6 +157,7 @@ if __name__ == '__main__':
 	tm = TextMining()
 	index = Index()
 	themes = Themes()
+	tags = Tags()
 	ntopics = database.get_ntopics()
 	documents = database.get_data()
 	for n,doc in enumerate(documents[0:1]):
@@ -163,6 +166,7 @@ if __name__ == '__main__':
 		tm.postags_entities(doc)
 		tm.terms(doc)
 		themes.insert(doc)
+		tags.get_tags(doc)
 	#	index.index(doc)
 	#	database.update(doc)
 	#themes.write()
