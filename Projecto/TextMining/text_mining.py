@@ -63,7 +63,7 @@ class TextMining:
 		[doc.tokens['desc'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.description)]
 		[doc.tokens['text'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.text)]
 
-	def tags_entities(self, doc):
+	def postags_entities(self, doc):
 		for f in ['title', 'desc', 'text']:
 			[doc.postags[f].extend(pos_tag(sentence)) for sentence in doc.tokens[f]]
 			doc.entities[f] = [c for c in ne_chunk(doc.postags[f], binary=True) if hasattr(c, '_label')]
@@ -103,6 +103,13 @@ class Index:
 		print('Optimizing ...')
 		self.index.optimize()
 
+class Tags:
+
+	def __init__(self):
+		pass
+
+	def get_tags(self, doc):
+		pass
 
 class Themes:
 
@@ -153,7 +160,7 @@ if __name__ == '__main__':
 	for n,doc in enumerate(documents[0:1]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 		tm.tokens(doc)
-		tm.tags_entities(doc)
+		tm.postags_entities(doc)
 		tm.terms(doc)
 		themes.insert(doc)
 	#	index.index(doc)
