@@ -72,7 +72,7 @@ class TextMining:
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
 			    else (t[0], t[1]) for t in doc.postags[f]]
 			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in (stopwords.words('english') \
-				and self.punct and self.removesw_list) and t[1] not in self.removetb_list]
+				or self.punct or self.removesw_list) and t[1] not in self.removetb_list]
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
 			doc.terms[f] = [lower(t[0]) if t[0] not in doc.entities[f] else t[0] for t in doc.postags[f]]
