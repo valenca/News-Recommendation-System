@@ -54,7 +54,8 @@ class Database:
 class TextMining:
 	def __init__(self):
 		self.punct = list(punctuation)+['``','\'\'','...']
-		self.remove_list = ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']
+		self.removesw_list = ['would']
+		self.removetb_list = ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']
 		self.replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not',
 			'\'d':'had'}
 		self.lemmatizer = wordnet.WordNetLemmatizer()
@@ -71,8 +72,8 @@ class TextMining:
 			doc.entities[f] = list(set([' '.join([l[0] for l in e.leaves()]) for e in doc.entities[f]]))
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
 			    else (t[0], t[1]) for t in doc.postags[f]]
-			doc.postags[f] = [t for t in doc.postags[f] if t[0] not in (stopwords.words('english') \
-				and self.punct) and t[1] not in self.remove_list]
+			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in (stopwords.words('english') \
+				and self.punct and self.removesw_list) and t[1] not in self.removetb_list]
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
 			doc.terms[f] = [lower(t[0]) if t[0] not in doc.entities[f] else t[0] for t in doc.postags[f]]
@@ -104,6 +105,7 @@ class Index:
 		print('Optimizing ...')
 		self.index.optimize()
 
+
 class Tags:
 
 	def __init__(self):
@@ -112,6 +114,7 @@ class Tags:
 	def get_tags(self, doc):
 		print Counter(doc.terms['text']).most_common(30)
 		pass
+
 
 class Themes:
 
