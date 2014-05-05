@@ -163,7 +163,6 @@ class Themes:
 		return [c.batch_classify([self.sets[0][doc.id-1][0]])[0] for c in self.classifiers]
 
 if __name__ == '__main__':
-	f = open('terms.dat', 'w')
 	database = Database()
 	tm = TextMining()
 	index = Index()
@@ -171,13 +170,12 @@ if __name__ == '__main__':
 	tags = Tags()
 	ntopics = database.get_ntopics()
 	documents = database.get_data()
-	dump(1200, f)
-	for n,doc in enumerate(documents[0:1200]):
+	for n,doc in enumerate(documents[99:100]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 		tm.tokens(doc)
 		tm.postags_entities(doc)
 		tm.terms(doc)
-		dump(doc.terms['text'], f)
+		print doc.terms
 		#themes.insert(doc)
 		#tags.get_tags(doc)
 		#database.tags(doc)
