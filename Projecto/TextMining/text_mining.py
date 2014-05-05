@@ -176,7 +176,7 @@ if __name__ == '__main__':
 		tm.postags_entities(doc)
 		tm.terms(doc)
 		themes.insert(doc)
-	#	tags.get_tags(doc)
+		#tags.get_tags(doc)
 		#database.tags(doc)
 		#index.index(doc)
 		#database.processed(doc)
