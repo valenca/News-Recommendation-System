@@ -48,15 +48,9 @@ CREATE TABLE feeds (
 );
 
 CREATE TABLE tags (
-	tgs_id INTEGER NOT NULL,
+	tgs_document INTEGER NOT NULL REFERENCES documents(doc_id),
 	tgs_tag TEXT NOT NULL,
-	PRIMARY KEY (tgs_id)
-);
-
-CREATE TABLE marks (
-	mrk_tag INTEGER NOT NULL REFERENCES tags(tgs_id),
-	mrk_document INTEGER NOT NULL REFERENCES documents(doc_id),
-	PRIMARY KEY (mrk_tag, mrk_document)
+	PRIMARY KEY (tgs_document, tgs_tag)
 );
 
 CREATE TABLE historics (

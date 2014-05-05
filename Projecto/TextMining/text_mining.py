@@ -10,7 +10,7 @@ from whoosh.fields import Schema, NUMERIC, DATETIME, TEXT
 from whoosh.index import create_in, open_dir
 from dateutil import parser
 from cPickle import load, dump
-from nltk.classify import DecisionTreeClassifier
+from nltk.classify import NaiveBayesClassifier
 from collections import Counter
 import os.path
 
@@ -46,7 +46,14 @@ class Database:
 				documents[-1].topics.append([row2[0], str(row2[1])])
 		return documents
 
-	def update(self, doc):
+	def tags(self, doc):
+		entities = []
+		[entities.extend(e) for e in doc.entities.values()]
+		for e in entities:
+			self.database.execute('INSERT INTO tags VALUES ('+str(doc.id)+',\''+e+'\');')
+		self.database.commit()
+
+	def processed(self, doc):
 		self.database.execute('UPDATE documents SET doc_processed = 1 WHERE doc_id = '+str(doc.id)+';')
 		self.database.commit()
 
@@ -54,8 +61,8 @@ class Database:
 class TextMining:
 	def __init__(self):
 		self.punct = list(punctuation)+['``','\'\'','...']
-		self.removesw_list = ['would']
-		self.removetb_list = ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']
+		self.remove_list = [['could','said','would','told','say','tell','use','used','mr','mrs'],
+		                    ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']]
 		self.replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not',
 			'\'d':'had'}
 		self.lemmatizer = wordnet.WordNetLemmatizer()
@@ -72,8 +79,9 @@ class TextMining:
 			doc.entities[f] = list(set([' '.join([l[0] for l in e.leaves()]) for e in doc.entities[f]]))
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
 			    else (t[0], t[1]) for t in doc.postags[f]]
-			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in (stopwords.words('english') \
-				or self.punct or self.removesw_list) and t[1] not in self.removetb_list]
+			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in stopwords.words('english') + \
+				 self.punct + self.remove_list[0] and t[1] not in self.remove_list[1]]
+
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
 			doc.terms[f] = [lower(t[0]) if t[0] not in doc.entities[f] else t[0] for t in doc.postags[f]]
@@ -112,10 +120,9 @@ class Tags:
 		pass
 
 	def get_tags(self, doc):
-		print Counter(doc.terms['text']).most_common(30)
-		pass
-
-
+		terms = Counter(doc.terms['title']+doc.terms['desc']+doc.terms['text']).most_common(5)
+		doc.tags = [t[0] for t in terms]
+		
 class Themes:
 
 	def __init__(self):
@@ -150,7 +157,7 @@ class Themes:
 				else:                       v = 0
 				self.sets[i].append((dict(zip(all_terms,hashmap[j])),v))
 
-		self.classifiers = [DecisionTreeClassifier.train(s) for s in self.sets]
+		self.classifiers = [NaiveBayesClassifier.train(s) for s in self.sets]
 
 	def test(self, doc):
 		return [c.batch_classify([self.sets[0][doc.id-1][0]])[0] for c in self.classifiers]
@@ -163,17 +170,18 @@ if __name__ == '__main__':
 	tags = Tags()
 	ntopics = database.get_ntopics()
 	documents = database.get_data()
-	for n,doc in enumerate(documents[0:1]):
+	for n,doc in enumerate(documents[0:10]):
 		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
 		tm.tokens(doc)
 		tm.postags_entities(doc)
 		tm.terms(doc)
 		themes.insert(doc)
-		tags.get_tags(doc)
-	#	index.index(doc)
-	#	database.update(doc)
+	#	tags.get_tags(doc)
+		#database.tags(doc)
+		#index.index(doc)
+		#database.processed(doc)
 	#themes.write()
 	themes.train(ntopics)
-	for n,doc in enumerate(documents[0:1]):
-		print themes.test(doc)
+	for n,doc in enumerate(documents[0:10]):
+		print [t[0] for t in doc.topics], [i+1 for i,j in enumerate(themes.test(doc)) if j == 1]
 	#index.optimize()

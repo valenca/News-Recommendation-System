@@ -106,7 +106,7 @@ def retrieve():
 
 		if refresh == 1:
 			documents[pos][1] = str(datetime)
-			database.execute('DELETE FROM marks WHERE mrk_document = '+str(documents[pos][0])+';')
+			database.execute('DELETE FROM tags WHERE tgs_document = '+str(documents[pos][0])+';')
 			database.execute('DELETE FROM themes WHERE thm_document = '+str(documents[pos][0])+';')
 			database.execute('UPDATE documents SET doc_processed = 0,'+\
 				' doc_datetime = \''+str(datetime)+'\','+\
