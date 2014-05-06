@@ -12,6 +12,7 @@ from dateutil import parser
 from cPickle import load, dump
 from nltk.classify import NaiveBayesClassifier
 from collections import Counter
+from sys import exit, stdout
 import os.path
 
 class Document:
@@ -20,6 +21,7 @@ class Document:
 		self.tokens = {'title':[],'desc':[],'text':[]}
 		self.postags = {'title':[],'desc':[],'text':[]}
 		self.entities = {}
+		self.topmod = {}
 		self.terms = {'title':[],'desc':[],'text':[]}
 
 
@@ -31,7 +33,7 @@ class Database:
 		for row in self.database.execute('SELECT count(*) FROM topics;'):
 			return row[0]
 
-	def get_data(self):
+	def get_documents(self):
 		documents = []
 		for row in self.database.execute('SELECT doc_id, doc_datetime, doc_title, doc_description,'+\
 			' doc_text FROM documents WHERE doc_processed = 0;'):
@@ -46,13 +48,6 @@ class Database:
 				documents[-1].topics.append([row2[0], str(row2[1])])
 		return documents
 
-	def tags(self, doc):
-		entities = []
-		[entities.extend(e) for e in doc.entities.values()]
-		for e in entities:
-			self.database.execute('INSERT INTO tags VALUES ('+str(doc.id)+',\''+e+'\');')
-		self.database.commit()
-
 	def processed(self, doc):
 		self.database.execute('UPDATE documents SET doc_processed = 1 WHERE doc_id = '+str(doc.id)+';')
 		self.database.commit()
@@ -65,6 +60,7 @@ class TextMining:
 		                    ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']]
 		self.replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not',
 			'\'d':'had'}
+		self.topmod_list = ['NN','NNS','NNP','NNPS','VB','VBD','VBN','VBP','VBZ']
 		self.lemmatizer = wordnet.WordNetLemmatizer()
 
 	def tokens(self, doc):
@@ -72,11 +68,12 @@ class TextMining:
 		[doc.tokens['desc'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.description)]
 		[doc.tokens['text'].append([t for t in word_tokenize(s)]) for s in sent_tokenize(doc.text)]
 
-	def postags_entities(self, doc):
+	def postags(self, doc):
 		for f in ['title', 'desc', 'text']:
 			[doc.postags[f].extend(pos_tag(sentence)) for sentence in doc.tokens[f]]
 			doc.entities[f] = [c for c in ne_chunk(doc.postags[f], binary=True) if hasattr(c, '_label')]
 			doc.entities[f] = list(set([' '.join([l[0] for l in e.leaves()]) for e in doc.entities[f]]))
+			doc.topmod[f] = [t for t in doc.postags[f] if t[1] in self.topmod_list]
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
 			    else (t[0], t[1]) for t in doc.postags[f]]
 			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in stopwords.words('english') + \
@@ -84,9 +81,21 @@ class TextMining:
 
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
+			doc.topmod[f] = [str(self.lemmatizer.lemmatize(lower(t[0]))) for t in doc.topmod[f]]
 			doc.terms[f] = [lower(t[0]) if t[0] not in doc.entities[f] else t[0] for t in doc.postags[f]]
 			doc.terms[f] = [str(self.lemmatizer.lemmatize(t)) for t in doc.terms[f]]
 			doc.terms[f] = list(map(lower,doc.terms[f]))
+
+	def write(self, database, documents):
+		#entities = []
+		#[entities.extend(e) for e in doc.entities.values()]
+		#for e in entities:
+		#	database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
+		#database.commit()
+		with open('terms.dat','wb') as f:
+			dump(1200,f)
+			for doc in documents[0:1200]:
+				dump(doc.terms['text'],f)
 
 
 class Index:
@@ -104,8 +113,11 @@ class Index:
 
 	def index(self, doc):
 		writer = self.index.writer()
-		writer.update_document(id = doc.id, datetime = parser.parse(doc.datetime), title = doc.terms['title'],
-			                   description = doc.terms['desc'], text = doc.terms['text'],
+		writer.update_document(id = doc.id,
+			                   datetime = parser.parse(doc.datetime),
+			                   title = doc.terms['title'],
+			                   description = doc.terms['desc'],
+			                   text = doc.terms['text'],
 			                   topics = list(map(unicode,list(map(lower,[t[1] for t in doc.topics])))))
 		writer.commit()
 
@@ -157,34 +169,85 @@ class Themes:
 				else:                       v = 0
 				self.sets[i].append((dict(zip(all_terms,hashmap[j])),v))
 
-		self.classifiers = [NaiveBayesClassifier.train(s) for s in self.sets]
+		#self.classifiers = [NaiveBayesClassifier.train(s) for s in self.sets]
 
-	def test(self, doc):
-		return [c.batch_classify([self.sets[0][doc.id-1][0]])[0] for c in self.classifiers]
+	def classify(self, doc):
+		for c in self.classifiers:
+			for p in c.batch_prob_classify([self.sets[0][n][0]]):
+				print '\r', round(p.prob(1),2), round(p.prob(0),2), '|',
+		print ''
 
 if __name__ == '__main__':
-	f = open('terms.dat', 'w')
+
 	database = Database()
 	tm = TextMining()
 	index = Index()
 	themes = Themes()
 	tags = Tags()
+
 	ntopics = database.get_ntopics()
-	documents = database.get_data()
-	dump(1200, f)
-	for n,doc in enumerate(documents[0:1200]):
-		print('(' + str(n+1) + ' ' + str(doc.id) + ')')
+	documents = database.get_documents()
+
+	from random import sample
+	documents = documents[0:1200]
+
+	total_docs = len(documents)
+	line = ''
+
+	stdout.write('\rText Processing\n'); stdout.flush()
+	for n,doc in enumerate(documents):
+		stdout.write('\r'+' '*len(line))
+		line = ' ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)+' - '+\
+		       ' & '.join([t[1] for t in doc.topics])+' - '+doc.title
+		stdout.write('\r'+line)
+		stdout.flush()
 		tm.tokens(doc)
-		tm.postags_entities(doc)
+		tm.postags(doc)
 		tm.terms(doc)
-		dump(doc.terms['text'], f)
-		#themes.insert(doc)
+		tm.write(database, documents)
+
+	stdout.write('\r'+' '*len(line))
+	stdout.write('\rIndexing\n'); stdout.flush()
+	for doc in documents:
+		stdout.write('\r'+' '*len(line))
+		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
+		stdout.write('\r'+line)
+		stdout.flush()
+		#index.index(doc)
+	#index.optimize()
+
+	'''stdout.write('\r'+' '*len(line))
+	stdout.write('\rTheme Classifying\n'); stdout.flush()
+	for doc in documents:
+		stdout.write('\r'+' '*len(line))
+		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
+		stdout.write('\r'+line)
+		stdout.flush()
+		themes.insert(doc)
+	stdout.write('\r'+' '*len(line))
+	line = '\rTraining ...'
+	stdout.write('\r'+line)
+	stdout.flush()
+	themes.train(ntopics)
+	themes.write()
+	for doc in documents:
+		stdout.write('\r'+' '*len(line))
+		line = '\rClassifying ...'
+		stdout.write('\r'+line)
+		stdout.flush()
+		themes.classify(doc)'''
+	
+
+
+
+	#for n,doc in enumerate(documents):
+	#	themes.insert(doc)
 		#tags.get_tags(doc)
 		#database.tags(doc)
 		#index.index(doc)
 		#database.processed(doc)
 	#themes.write()
 	#themes.train(ntopics)
-	#for n,doc in enumerate(documents[0:10]):
-	#	print [t[0] for t in doc.topics], [i+1 for i,j in enumerate(themes.test(doc)) if j == 1]
+	#for n,doc in enumerate(docs):
+	#	print [t[0] for t in doc.topics], themes.test(n,doc)
 	#index.optimize()
