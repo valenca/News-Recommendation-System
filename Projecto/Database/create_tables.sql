@@ -47,10 +47,10 @@ CREATE TABLE feeds (
 	PRIMARY KEY (fds_id)
 );
 
-CREATE TABLE tags (
-	tgs_document INTEGER NOT NULL REFERENCES documents(doc_id),
-	tgs_tag TEXT NOT NULL,
-	PRIMARY KEY (tgs_document, tgs_tag)
+CREATE TABLE entities (
+	ent_document INTEGER NOT NULL REFERENCES documents(doc_id),
+	ent_entity TEXT NOT NULL,
+	PRIMARY KEY (ent_document, ent_entity)
 );
 
 CREATE TABLE historics (
@@ -70,11 +70,11 @@ CREATE TABLE tpc_preferences (
 	PRIMARY KEY (tpp_user, tpp_topic)
 );
 
-CREATE TABLE tgs_preferences (
-	tgp_user INTEGER NOT NULL REFERENCES users(usr_id),
-	tgp_tag INTEGER NOT NULL REFERENCES tags(tgs_id),
-	tgp_nviews INTEGER NOT NULL DEFAULT 0,
-	tgp_rating REAL NOT NULL DEFAULT 2.5,
-	tgp_nratings INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY (tgp_user, tgp_tag)
+CREATE TABLE ent_preferences (
+	enp_user INTEGER NOT NULL REFERENCES users(usr_id),
+	enp_entity TEXT NOT NULL REFERENCES entities(ent_entity),
+	enp_nviews INTEGER NOT NULL DEFAULT 0,
+	enp_rating REAL NOT NULL DEFAULT 2.5,
+	enp_nratings INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY (enp_user, enp_entity)
 );
