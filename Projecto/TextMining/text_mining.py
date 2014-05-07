@@ -57,7 +57,7 @@ class TextMining:
 	def __init__(self):
 		self.punct = list(punctuation)+['``','\'\'','...']
 		self.remove_list = [['could','said','would','told','say','tell','use','used','mr','mrs'],
-		                    ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH']]
+		                    ['POS','PRP','PRP$','IN','TO','CC','DT','EX','LS','PDT','RP','UH','CD']]
 		self.replace_list = {'\'s':'is','\'re':'are','\'m':'am','\'ll':'will','\'ve':'have','n\'t':'not',
 			'\'d':'had'}
 		self.topmod_list = ['NN','NNS','NNP','NNPS','VB','VBD','VBN','VBP','VBZ']
@@ -189,7 +189,7 @@ if __name__ == '__main__':
 	documents = database.get_documents()
 
 	from random import sample
-	documents = documents[0:1200]
+	documents = documents[199:200]
 
 	total_docs = len(documents)
 	line = ''
@@ -204,7 +204,8 @@ if __name__ == '__main__':
 		tm.tokens(doc)
 		tm.postags(doc)
 		tm.terms(doc)
-		tm.write(database, documents)
+		print doc.terms['text']
+		#tm.write(database, documents)
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
