@@ -69,12 +69,3 @@ CREATE TABLE tpc_preferences (
 	tpp_nratings INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY (tpp_user, tpp_topic)
 );
-
-CREATE TABLE ent_preferences (
-	enp_user INTEGER NOT NULL REFERENCES users(usr_id),
-	enp_entity TEXT NOT NULL REFERENCES entities(ent_entity),
-	enp_nviews INTEGER NOT NULL DEFAULT 0,
-	enp_rating REAL NOT NULL DEFAULT 2.5,
-	enp_nratings INTEGER NOT NULL DEFAULT 0,
-	PRIMARY KEY (enp_user, enp_entity)
-);
