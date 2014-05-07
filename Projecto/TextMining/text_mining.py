@@ -204,7 +204,6 @@ if __name__ == '__main__':
 		tm.tokens(doc)
 		tm.postags(doc)
 		tm.terms(doc)
-		print doc.terms['text']
 		#tm.write(database, documents)
 
 	stdout.write('\r'+' '*len(line))

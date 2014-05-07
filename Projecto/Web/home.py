@@ -166,7 +166,7 @@ class Home(object):
 				docs[n]['urating'] = row[0]/5.0
 				docs[n]['view'] = row[1]
 			for row in database.execute('SELECT tpp_nviews/usr_nviews, tpp_rating from users,'+\
-			    'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+';'):
+				'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+';'):
 				docs[n]['preftv'] = row[0]
 				docs[n]['preftr'] = row[1]/5.0
 
@@ -176,7 +176,7 @@ class Home(object):
 
 		for doc in docs:
 			doc['score'] = 0.35*doc['view'] + 1.75*doc['rating'] + 1.25*doc['urating'] + \
-			               2.5*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
+						   2.5*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
 
 		docs.sort(key=itemgetter('score'), reverse = True)
 		docs = docs[(page-1)*10:page*10]
@@ -185,7 +185,7 @@ class Home(object):
 			for row in database.execute('SELECT doc_datetime,doc_thumbnail,doc_title,doc_description'+\
 			' from documents where doc_id = '+str(did)+';'):
 				if docs[n]['view'] == 1: opacity = '0.6'; color = '#909090'
-				else:                    opacity = '1'; color = '#303030'
+				else:					opacity = '1'; color = '#303030'
 				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";'+\
 					' vertical-align=middle;><img src="'+str(row[1])+'" style="opacity:'+opacity+';""></td>')
 				strings[-1] += '<td><h2><a href="/document/'+str(uid)+'/'+str(did)+\
@@ -200,4 +200,6 @@ class Home(object):
 if __name__ == '__main__':
 	root = Home()
 	root.topic = Topic()
+	cherrypy.server.socket_host = '10.3.3.196'
+	cherrypy.engine.start()
 	cherrypy.quickstart(root)
