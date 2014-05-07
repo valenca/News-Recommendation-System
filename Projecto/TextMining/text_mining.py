@@ -73,10 +73,14 @@ class TextMining:
 			[doc.postags[f].extend(pos_tag(sentence)) for sentence in doc.tokens[f]]
 			doc.entities[f] = [c for c in ne_chunk(doc.postags[f], binary=True) if hasattr(c, '_label')]
 			doc.entities[f] = list(set([' '.join([l[0] for l in e.leaves()]) for e in doc.entities[f]]))
-			doc.topmod[f] = [t for t in doc.postags[f] if t[1] in self.topmod_list]
+			doc.topmod[f] = [t for t in doc.postags[f] if t[1] in self.topmod_list]			
+			doc.topmod[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
+			    else (t[0], t[1]) for t in doc.topmod[f]]
+			doc.topmod[f] = [t for t in doc.topmod[f] if lower(t[0]) not in stopwords.words('english')+ \
+				 self.punct + self.remove_list[0] and t[1] not in self.remove_list[1]]
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys()
 			    else (t[0], t[1]) for t in doc.postags[f]]
-			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in stopwords.words('english') + \
+			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in stopwords.words('english')+ \
 				 self.punct + self.remove_list[0] and t[1] not in self.remove_list[1]]
 
 	def terms(self, doc):
@@ -92,10 +96,10 @@ class TextMining:
 		#for e in entities:
 		#	database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
 		#database.commit()
-		with open('terms.dat','wb') as f:
-			dump(1200,f)
-			for doc in documents[0:1200]:
-				dump(doc.terms['text'],f)
+		with open('Topic/new_terms.dat','wb') as f:
+			dump(100,f)
+			for doc in documents[0:100]:
+				dump(doc.topmod['text'],f)
 
 
 class Index:
@@ -189,7 +193,7 @@ if __name__ == '__main__':
 	documents = database.get_documents()
 
 	from random import sample
-	documents = documents[0:1200]
+	documents = documents[1200:1300]
 
 	total_docs = len(documents)
 	line = ''
@@ -204,7 +208,7 @@ if __name__ == '__main__':
 		tm.tokens(doc)
 		tm.postags(doc)
 		tm.terms(doc)
-		tm.write(database, documents)
+	tm.write(database, documents)
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
