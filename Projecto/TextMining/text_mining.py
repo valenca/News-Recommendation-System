@@ -49,7 +49,6 @@ class Database:
 
 	def processed(self, doc):
 		self.database.execute('UPDATE documents SET doc_processed = 1 WHERE doc_id = '+str(doc.id)+';')
-		self.database.commit()
 
 
 class TextMining:
@@ -91,7 +90,6 @@ class TextMining:
 		[entities.extend(e) for e in doc.entities.values()]
 		for e in entities:
 			database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
-		database.commit()
 
 
 class Index:
@@ -241,3 +239,5 @@ if __name__ == '__main__':
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rUpdating DB\n'); stdout.flush()
 	[database.processed(doc) for doc in documents]
+
+	database.database.commit()
