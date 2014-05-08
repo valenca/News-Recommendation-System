@@ -33,7 +33,7 @@ from whoosh import scoring
 with index.searcher(weighting=scoring.TF_IDF()) as searcher:
 	from whoosh.qparser import MultifieldParser
 	parser = MultifieldParser(['title','text','datetime','text2'],index.schema)
-	#parser.add_plugin(DateParserPlugin())
+	parser.add_plugin(DateParserPlugin())
 	myquery = parser.parse('fours OR ofs OR business OR sev')
 
 	c = searcher.collector()
