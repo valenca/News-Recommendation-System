@@ -74,11 +74,10 @@ def get_similar(doc):
 	index      = fetch_index(lda)
 
 	vec_bow = dictionary.doc2bow(doc)
-	vec_lda = lda[vec_bow] # convert the query to LSI 
+	vec_lda = lda[vec_bow] 
 	sims=index[vec_lda]
 	
 	return sorted(enumerate(sims),key=lambda item: -item[1])[:10]
-	#return lda[dictionary.doc2bow(doc)]
 
 if __name__ == '__main__':
 	print get_similar(argv[1])
