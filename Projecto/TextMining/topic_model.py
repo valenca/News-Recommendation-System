@@ -62,7 +62,8 @@ def get_similar(doc):
 		except IOError:
 			print "Model not found, building LDA..."
 			corpus=MyCorpus()
-			lda = LdaModel(corpus,num_topics=50,id2word=dictionary,update_every=1,chunksize=1000,passes=15)
+			#lda = LdaModel(corpus,num_topics=50,update_every=1,chunksize=1000,passes=15)
+			lda = LdaModel(corpus,num_topics=50,id2word=dictionary,update_every=1,chunksize=1000,passes=50)
 			print "LDA Built!"
 			lda.save('Topic/lda.tm')
 		return lda

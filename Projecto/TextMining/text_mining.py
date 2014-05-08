@@ -97,8 +97,8 @@ class TextMining:
 		#	database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
 		#database.commit()
 		with open('Topic/new_terms.dat','wb') as f:
-			dump(100,f)
-			for doc in documents[0:100]:
+			dump(1200,f)
+			for doc in documents[0:1200]:
 				dump(doc.topmod['text'],f)
 
 
@@ -193,7 +193,7 @@ if __name__ == '__main__':
 	documents = database.get_documents()
 
 	from random import sample
-	documents = documents[1200:1300]
+	documents = documents[:1200]
 
 	total_docs = len(documents)
 	line = ''
@@ -208,7 +208,7 @@ if __name__ == '__main__':
 		tm.tokens(doc)
 		tm.postags(doc)
 		tm.terms(doc)
-	#tm.write(database, documents)
+	tm.write(database, documents)
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
@@ -240,9 +240,6 @@ if __name__ == '__main__':
 		stdout.write('\r'+line)
 		stdout.flush()
 		themes.classify(doc)'''
-	
-
-
 
 	#for n,doc in enumerate(documents):
 	#	themes.insert(doc)
