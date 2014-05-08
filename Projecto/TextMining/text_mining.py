@@ -14,6 +14,9 @@ from cPickle import load, dump
 from nltk.classify import NaiveBayesClassifier
 from collections import Counter
 from sys import exit, stdout
+from gensim.models.ldamodel import LdaModel
+from gensim import similarities
+from gensim.corpora import Dictionary
 import os.path
 
 class Document:
@@ -77,9 +80,11 @@ class TextMining:
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
 			doc.topmod[f] = [str(self.lemmatizer.lemmatize(lower(t[0]))) for t in doc.topmod[f]]
+			doc.topmod[f] = [t for t in doc.topmod[f] if t not in self.remove_list[0]]
 			doc.terms[f] = [lower(t[0]) if t[0] not in doc.entities[f] else t[0] for t in doc.postags[f]]
 			doc.terms[f] = [str(self.lemmatizer.lemmatize(t)) for t in doc.terms[f]]
 			doc.terms[f] = list(map(lower,doc.terms[f]))
+			doc.terms[f] = [t for t in doc.terms[f] if t not in self.remove_list[0]]
 
 	def write(self, database, documents):
 		entities = []
@@ -124,6 +129,19 @@ class Index:
 		self.index.optimize()
 
 
+class MyCorpus(object):
+	def __init__(self, tm):
+		self.tm = tm
+	def __iter__(self):
+		for key,terms in self.tm.data.iteritems():
+			yield dictionary.doc2bow(terms)
+class MyDictionary(object):
+	def __init__(self, tm):
+		self.tm = tm
+	def __iter__(self):
+		for key,terms in self.tm.data.iteritems():
+			self.tm.translator.append(key)
+			yield terms							
 class TopicModelling:
 	def __init__(self):
 		if os.path.isfile('Topic/data.loc'):
@@ -132,6 +150,7 @@ class TopicModelling:
 				self.data = load(f)
 		else:
 			self.data = {}
+		self.translator = []
 
 	def update(self, doc):
 		self.data[doc.id] = doc.topmod['text']
@@ -142,20 +161,47 @@ class TopicModelling:
 			dump(self.data,f)
 
 	def generate_models(self):
-		pass
+
+		def fetch_dict():
+			global dictionary
+			dictionary=Dictionary([i for i in my_dictionary])
+			once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq == 1]
+			dictionary.filter_tokens(once_ids)
+			dictionary.compactify()
+			dictionary.save("Topic/dic.tm")
+			return dictionary
+
+		def fetch_model(dictionary):
+			corpus=my_corpus
+			lda = LdaModel(corpus,num_topics=50,update_every=1,chunksize=1000,passes=15)
+			#lda = LdaModel(corpus,num_topics=50,id2word=dictionary,update_every=1,chunksize=1000,passes=50)
+			lda.save('Topic/lda.tm')
+			return lda
+
+		def fetch_index(lda):
+			corp=[i for i in my_corpus]
+			index = similarities.MatrixSimilarity(lda[corp])
+			index.save('Topic/index.tm')
+			return index
+
+		global dictionary
+		my_dictionary = MyDictionary(self)
+		my_corpus = MyCorpus(self)
+		fetch_index(fetch_model(fetch_dict()))
 		
+		with open('Topic/translator.loc', 'wb') as f:
+			dump(self.translator,f)
+
 
 if __name__ == '__main__':
 
 	database = Database()
 	mining = TextMining()
 	index = Index()
+	global modelling
 	modelling = TopicModelling()
 
 	documents = database.get_documents()
-
-	from random import sample
-	documents = documents[0:2]
 
 	total_docs = len(documents)
 	line = ''
@@ -170,7 +216,7 @@ if __name__ == '__main__':
 		mining.tokens(doc)
 		mining.postags(doc)
 		mining.terms(doc)
-	#mining.write(database, documents)
+	mining.write(database, documents)
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
@@ -179,8 +225,8 @@ if __name__ == '__main__':
 		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
 		stdout.write('\r'+line)
 		stdout.flush()
-		#index.index(doc)
-	#index.optimize()
+		index.index(doc)
+	index.optimize()
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rModelling\n'); stdout.flush()
@@ -189,10 +235,10 @@ if __name__ == '__main__':
 		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
 		stdout.write('\r'+line)
 		stdout.flush()
-		#modelling.update(doc)
-	#modelling.write()
-	#modelling.generate_models()
+		modelling.update(doc)
+	modelling.write()
+	modelling.generate_models()
 	
 	stdout.write('\r'+' '*len(line))
-	stdout.write('\Updating DB\n'); stdout.flush()
-	#[database.processed(doc) for doc in documents]
+	stdout.write('\rUpdating DB\n'); stdout.flush()
+	[database.processed(doc) for doc in documents]
