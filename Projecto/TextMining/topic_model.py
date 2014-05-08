@@ -37,7 +37,7 @@ def get_similar(doc):
 			dictionary.save("Topic/dic.tm")
 		return dictionary
 
-	def fetch_model():
+	def fetch_model(dictionary):
 		print "Fetching LDA Model... ",
 		try:
 			lda = LdaModel.load('Topic/lda.tm')
@@ -58,7 +58,7 @@ def get_similar(doc):
 			print "Indexes loaded!"
 		except IOError:
 			print "Indexes not found, building Indexes..."
-			corp=[i for i in corpus]
+			corp=[i for i in MyCorpus()]
 
 			#pprint(sorted(lda.print_topics(50),reverse=True))
 			index = similarities.MatrixSimilarity(lda[corp])
@@ -68,10 +68,7 @@ def get_similar(doc):
 		return index
 
 	global dictionary
-	dictionary = fetch_dict()
-	lda        = fetch_model()
-	corpus     = MyCorpus()
-	index      = fetch_index(lda)
+	fetch_index(fetch_model(fetch_dict()))
 
 	vec_bow = dictionary.doc2bow(doc)
 	vec_lda = lda[vec_bow] 
