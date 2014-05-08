@@ -195,7 +195,6 @@ if __name__ == '__main__':
 	database = Database()
 	mining = TextMining()
 	index = Index()
-	global modelling
 	modelling = TopicModelling()
 
 	documents = database.get_documents()
