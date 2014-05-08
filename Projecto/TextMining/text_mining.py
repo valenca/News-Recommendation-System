@@ -168,21 +168,20 @@ class TopicModelling:
 			once_ids = [tokenid for tokenid, docfreq in dictionary.dfs.iteritems() if docfreq == 1]
 			dictionary.filter_tokens(once_ids)
 			dictionary.compactify()
-			dictionary.save("Topic/dic.tm")
+			dictionary.save("Topic/dic.loc")
 			return dictionary
 
 		def fetch_model(dictionary):
 			corpus=my_corpus
 			lda = LdaModel(corpus,num_topics=50,update_every=1,chunksize=1000,passes=15)
 			#lda = LdaModel(corpus,num_topics=50,id2word=dictionary,update_every=1,chunksize=1000,passes=50)
-			lda.save('Topic/lda.tm')
+			lda.save('Topic/lda.loc')
 			return lda
 
 		def fetch_index(lda):
 			corp=[i for i in my_corpus]
 			index = similarities.MatrixSimilarity(lda[corp])
-			index.save('Topic/index.tm')
-			return index
+			index.save('Topic/index.loc')
 
 		global dictionary
 		my_dictionary = MyDictionary(self)

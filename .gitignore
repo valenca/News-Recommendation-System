@@ -1,5 +1,5 @@
 *~
-*.loc
+*.loc*
 *.pyc
 *.pdf
 *.jnl
