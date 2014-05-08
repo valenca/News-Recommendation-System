@@ -36,7 +36,7 @@ class Database:
 	def get_documents(self):
 		documents = []
 		for row in self.database.execute('SELECT doc_id, doc_datetime, doc_title, doc_description,'+\
-			' doc_text FROM documents WHERE doc_processed = 0;'):
+			' doc_text FROM documents WHERE doc_processed = 1;'):
 			documents.append(Document())
 			documents[-1].id = row[0]
 			documents[-1].datetime = str(row[1])
@@ -70,12 +70,12 @@ class TextMining:
 			[doc.postags[f].extend(pos_tag(sentence)) for sentence in doc.tokens[f]]
 			doc.entities[f] = [c for c in ne_chunk(doc.postags[f], binary=True) if hasattr(c, '_label')]
 			doc.entities[f] = list(set([' '.join([l[0] for l in e.leaves()]) for e in doc.entities[f]]))
-			doc.topmod[f] = [t for t in doc.postags[f] if t[1] in self.topmod_list]			
+			'''doc.topmod[f] = [t for t in doc.postags[f] if t[1] in self.topmod_list]			
 			doc.topmod[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys() else (t[0], t[1]) for t in doc.topmod[f]]
 			doc.topmod[f] = [t for t in doc.topmod[f] if lower(t[0]) not in stopwords.words('english')+self.punct + self.remove_list[0] and t[1] not in self.remove_list[1]]
 			doc.postags[f] = [(self.replace_list[t[0]], t[1]) if t[0] in self.replace_list.keys() else (t[0], t[1]) for t in doc.postags[f]]
 			doc.postags[f] = [t for t in doc.postags[f] if lower(t[0]) not in stopwords.words('english')+self.punct + self.remove_list[0] and t[1] not in self.remove_list[1]]
-
+'''
 	def terms(self, doc):
 		for f in ['title', 'desc', 'text']:
 			doc.topmod[f] = [str(self.lemmatizer.lemmatize(lower(t[0]))) for t in doc.topmod[f]]
@@ -202,10 +202,6 @@ if __name__ == '__main__':
 	total_docs = len(documents)
 	line = ''
 
-	if total_docs == 0:
-		print 'No new documents'
-		exit(0)
-
 	stdout.write('\rProcessing\n'); stdout.flush()
 	for n,doc in enumerate(documents):
 		stdout.write('\r'+' '*len(line))
@@ -215,9 +211,9 @@ if __name__ == '__main__':
 		stdout.flush()
 		mining.tokens(doc)
 		mining.postags(doc)
-		mining.terms(doc)
+		#mining.terms(doc)
 		mining.write(database, doc)
-	
+	'''
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
 	for n,doc in enumerate(documents):
@@ -246,8 +242,9 @@ if __name__ == '__main__':
 	stdout.write('\r'+line)
 	stdout.flush()
 	modelling.generate_models()
-
+	
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rDB Updating\n'); stdout.flush()
-	[database.processed(doc) for doc in documents]
+	[database.processed(doc) for doc in documents]'''
+
 	database.database.commit()
