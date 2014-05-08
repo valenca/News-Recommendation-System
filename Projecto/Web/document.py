@@ -1,25 +1,17 @@
 import cherrypy
-from topic import Topic
-from document import Document
 
-class Home(object):
+class Document(object):
 
 	@cherrypy.expose
-	def index(self, uid='1'):
-		raise cherrypy.HTTPRedirect("/home/1")
-
-	@cherrypy.expose
-	def home(self, uid='1',page='1'):
-		if page < '1':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/1")
-		elif page > '5':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/5")
+	def default(self, uid='1', did='-1'):
+		if did == '-1':
+			raise cherrypy.HTTPRedirect("/home/"+uid)
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>News Feed - Home</title>
+	<title>News Feed - Topics</title>
 
 	<meta name="author" content="jQuery Foundation - jquery.org">
 	<meta name="description" content="jQuery: The Write Less, Do More, JavaScript Library">
@@ -81,12 +73,8 @@ class Home(object):
 
 			<div class="content-right twelve columns">
 				<div id="content">
-					""" + self.get_home_docs(uid, page) + """
 
-
-					<div class="pagination">
-						""" + self.home_pagination(uid, page) + """
-					</div>
+					""" + self.get_document(uid, did) + """
 
 				</div>
 
@@ -119,28 +107,13 @@ class Home(object):
 	</footer>
 
 
+
 </body>
 </html>"""
 
-	def home_pagination(self, uid='1', page='1'):
-
-		string = ''
-		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/1'\"><b>1</b></a>\n"
-		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/2'\"><b>2</b></a>\n"
-		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/3'\"><b>3</b></a>\n"
-		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/4'\"><b>4</b></a>\n"
-		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/5'\"><b>5</b></a>\n"
-
-		return string
-
-	def get_home_docs(self, uid='1', page='1'):
+	def get_document(self, uid, did):
 		uid = int(uid)
-		page = int(page)
+		did = int(did)
 
 		from sqlite3 import connect
 		from operator import itemgetter
@@ -148,60 +121,72 @@ class Home(object):
 
 		database = connect('../Database/database.db')
 
-		docids = []
-		for row in database.execute('SELECT doc_id FROM documents;'):
-			docids.append(row[0])
-		docs = [{'urating':2.5,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
+		doc={'urating':2.5,'view':0}
+		for row in database.execute('SELECT doc_datetime,doc_link,doc_thumbnail,doc_title,doc_description,'+\
+			'doc_text,doc_rating,doc_nviews FROM documents where doc_id = '+str(did)+';'):
+			doc['datetime']=parser.parse(str(row[0])).strftime('%d/%m/%Y - %H:%M:%S')
+			doc['link'] = str(row[1])
+			doc['thumbnail'] = str(row[2])
+			doc['title'] = str(row[3])
+			doc['description'] = str(row[4])
+			doc['text'] = str(row[5])
+			doc['rating'] = row[6]
+			doc['nviews'] = row[7]
 
-		max_views = 0
+		doc['topics'] = []
+		topics = []
+		for row in database.execute('SELECT tpc_id,tpc_name FROM topics,tpc_doc where tpd_document = '+str(did)+\
+			' and tpd_topic = tpc_id;'):
+			topics.append(row[0])
+			doc['topics'].append(str(row[1]))
 
-		for n,did in enumerate(docids):
-			for row in database.execute('SELECT doc_id,doc_rating,doc_nviews from documents'+\
-				' where doc_id = '+str(did)+';'):
-				docs[n]['id'] = row[0]
-				docs[n]['rating'] = row[1]/5.0
-				docs[n]['views'] = row[2]
-				if row[2] > max_views: max_views = row[2]
-			for row in database.execute('SELECT hst_rating,hst_view from historics'+\
-				' where hst_document = '+str(did)+' and hst_user = '+str(uid)+';'):
-				docs[n]['urating'] = row[0]/5.0
-				docs[n]['view'] = row[1]
-			for row in database.execute('SELECT tpp_nviews/usr_nviews, tpp_rating from users,'+\
-				'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+';'):
-				docs[n]['preftv'] = row[0]
-				docs[n]['preftr'] = row[1]/5.0
+		doc['entities'] = []
+		for row in database.execute('SELECT ent_entity FROM entities where ent_document = '+str(did)+';'):
+			doc['entities'].append(str(row[0]))
 
-		if max_views != 0:
-			for doc in docs:
-				doc['views'] /= 1.0 * max_views
+		for row in database.execute('SELECT hst_rating,hst_view FROM historics where hst_document = '+\
+			str(did)+' and hst_user = '+str(uid)+';'):
+			doc['urating'] = row[0]
+			doc['view'] = row[1]
 
-		for doc in docs:
-			doc['score'] = 0.35*doc['view'] + 1.75*doc['rating'] + 1.25*doc['urating'] + \
-						   2.5*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
+		if doc['view'] == 0:
+			database.execute('UPDATE users set usr_nviews = usr_nviews+1 where usr_id = '+str(uid)+';')
+			database.execute('UPDATE documents set doc_nviews = doc_nviews+1 where doc_id = '+str(did)+';')
+			database.execute('UPDATE historics set hst_view = 1 where hst_document = '+str(did)+' and hst_user = '+str(uid)+';')
+			for t in topics:
+				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
 
-		docs.sort(key=itemgetter('score'), reverse = True)
-		docs = docs[(page-1)*10:page*10]
-		strings=[]
-		for n,did in enumerate([doc['id'] for doc in docs]):
-			for row in database.execute('SELECT doc_datetime,doc_thumbnail,doc_title,doc_description'+\
-			' from documents where doc_id = '+str(did)+';'):
-				if docs[n]['view'] == 1: opacity = '0.6'; color = '#909090'
-				else:					opacity = '1'; color = '#303030'
-				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";'+\
-					' vertical-align=middle;><img src="'+str(row[1])+'" style="opacity:'+opacity+';""></td>')
-				strings[-1] += '<td><h2><a href="/document/'+str(uid)+'/'+str(did)+\
-					'" style="color:'+color+';">' + str(row[2]) + '</a></h2>\n'
-				strings[-1] += '<p style="color:#606060; font-size:15"><span style="color:#A0A0A0">'
-				strings[-1] += parser.parse(str(row[0])).strftime('%d/%m/%Y')+'</span>'
-				strings[-1] += ' - ' + str(row[3]) + '</p></td></tr></table>\n'
-				#strings[-1] += '\n<hr class="dots"/>\n'
+		"""<div class="dev-links">
+			<h3>Developer Links</h3>
+			<ul>
+				<li><a href="https://github.com/jquery/jquery-ui">Source Code (GitHub)</a></li>
+				<li><a href="http://code.jquery.com/ui/jquery-ui-git.js">jQuery UI Git (WIP Build)</a>
+					<ul>
+						<li><a href="http://code.jquery.com/ui/jquery-ui-git.css">Theme (WIP Build)</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>"""
+		
+		string = '<div class="dev-links">\n'
+		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
+		string += '<h3 style="color:303030;">Rate this document:</h3>\n'
+		string += '<h3 style="color:303030;">Tags:</h3><ul>\n'
+		for t in doc['entities']:
+			string += '<li><a href="/tag/'+str(uid)+'/'+t+'" style="color:303030;">'+t+'</a></li><ul>'
+		string += '</div>\n'
 
-		return ''.join(strings)
+		string += '<p style="color:#808080;float:left">'+doc['datetime']+'</p>\n'
+		string += '<p align="right" style="color:#808080;float:right;">'+' | '.join(doc['topics'])+'</p>\n'
+		string += '<div style="clear:left;"></div>\n'
+		string += '<h1>'+doc['title']+'</h1>\n'
 
-if __name__ == '__main__':
-	root = Home()
-	root.topic = Topic()
-	root.document = Document()
-	#cherrypy.server.socket_host = '10.3.3.196'
-	cherrypy.engine.start()
-	cherrypy.quickstart(root)
+		string += '<table style="margin: 0em 0em"><tr style="border-bottom:15px solid #fff;;background-color:#fff">'
+		string += '<td width="170px";vertical-align=middle;>'
+		string += '<img src="'+doc['thumbnail']+'" align="left"></td>'
+		string += '<td><p style="font-weight:bold;font-size:15">'+doc['text'].split('\n')[0]+'</p>\n'
+		string += '</td></tr></table>\n'
+		for p in doc['text'].split('\n')[1:]:
+			string += '<p style="font-size:15;margin-bottom: 8px;">'+p+'</p>'
+
+		return string

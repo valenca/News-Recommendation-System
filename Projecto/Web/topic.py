@@ -184,7 +184,7 @@ class Topic(object):
 				if docs[n]['view'] == 1: opacity = '0.6'; color = '#909090'
 				else:                    opacity = '1'; color = '#303030'
 				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";'+\
-					' vertical-align=middle;><img src="'+str(row[1])+'" style="opacity:'+opacity+';""></td>')
+					' vertical-align=middle;><img src="'+str(row[1])+'" style="opacity:'+opacity+';"></td>')
 				strings[-1] += '<td><h2><a href="/document/'+str(uid)+'/'+str(did)+\
 					'" style="color:'+color+';">' + str(row[2]) + '</a></h2>\n'
 				strings[-1] += '<p style="color:#606060; font-size:15"><span style="color:#A0A0A0">'
