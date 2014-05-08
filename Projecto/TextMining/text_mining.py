@@ -89,7 +89,7 @@ class TextMining:
 		entities = []
 		[entities.extend(e) for e in doc.entities.values()]
 		for e in entities:
-			database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
+			database.database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
 
 
 class Index:
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 	index = Index()
 	modelling = TopicModelling()
 
-	documents = database.get_documents()
+	documents = database.get_documents()[:20]
 
 	total_docs = len(documents)
 	line = ''
