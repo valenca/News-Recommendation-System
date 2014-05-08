@@ -197,7 +197,7 @@ if __name__ == '__main__':
 	index = Index()
 	modelling = TopicModelling()
 
-	documents = database.get_documents()[:10]
+	documents = database.get_documents()
 
 	total_docs = len(documents)
 	line = ''
