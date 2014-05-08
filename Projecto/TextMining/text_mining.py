@@ -88,12 +88,14 @@ class TextMining:
 	def write(self, database, documents):
 		entities = []
 		[entities.extend(e) for e in doc.entities.values()]
+		entities = list(set(entities))
 		for e in entities:
 			database.database.execute('INSERT INTO entities VALUES ('+str(doc.id)+',\''+e+'\');')
 
 
 class Index:
 	def __init__(self):
+		self.analyser = StemmingAnalyzer(stoplist=None)
 		if not os.path.isdir('Index'):
 			os.mkdir('Index')
 			schema = Schema(id = NUMERIC(stored=True,unique=True),
@@ -107,23 +109,21 @@ class Index:
 							topics = TEXT(field_boost=3))
 			create_in('Index', schema)
 		self.index = open_dir('Index')
-		self.analyser = StemmingAnalyzer(stoplist=None)
 
-	def index(self, doc):
+	def update(self, doc):
 		writer = self.index.writer()
 		writer.update_document(id = doc.id,
 			                   datetime = parser.parse(doc.datetime),
 			                   title = doc.terms['title'],
-			                   s_title = doc.title,
+			                   s_title = unicode(doc.title),
 			                   description = doc.terms['desc'],
-			                   s_description = doc.description,
+			                   s_description = unicode(doc.description),
 			                   text = doc.terms['text'],
-			                   s_text = doc.text,
+			                   s_text = unicode(doc.text),
 			                   topics = list(map(unicode,[t[1] for t in doc.topics])))
 		writer.commit()
 
 	def optimize(self):
-		print('Optimizing ...')
 		self.index.optimize()
 
 
@@ -197,7 +197,7 @@ if __name__ == '__main__':
 	index = Index()
 	modelling = TopicModelling()
 
-	documents = database.get_documents()[:20]
+	documents = database.get_documents()[:10]
 
 	total_docs = len(documents)
 	line = ''
@@ -216,27 +216,35 @@ if __name__ == '__main__':
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rIndexing\n'); stdout.flush()
-	for doc in documents:
+	for n,doc in enumerate(documents):
 		stdout.write('\r'+' '*len(line))
 		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
 		stdout.write('\r'+line)
 		stdout.flush()
-		index.index(doc)
+		index.update(doc)
+	stdout.write('\r'+' '*len(line))
+	line = '\r Optimizing ...'
+	stdout.write('\r'+line)
+	stdout.flush()
 	index.optimize()
 
 	stdout.write('\r'+' '*len(line))
 	stdout.write('\rModelling\n'); stdout.flush()
-	for doc in documents:
+	for n,doc in enumerate(documents):
 		stdout.write('\r'+' '*len(line))
 		line = '\r ('+str(n+1)+'/'+str(total_docs)+') '+str(doc.id)
 		stdout.write('\r'+line)
 		stdout.flush()
 		modelling.update(doc)
 	modelling.write()
+	stdout.write('\r'+' '*len(line))
+	line = '\r Generating LDA Model ...'
+	stdout.write('\r'+line)
+	stdout.flush()
 	modelling.generate_models()
 	
 	stdout.write('\r'+' '*len(line))
-	stdout.write('\rUpdating DB\n'); stdout.flush()
+	stdout.write('\rDB Updating\n'); stdout.flush()
 	[database.processed(doc) for doc in documents]
 
 	database.database.commit()
