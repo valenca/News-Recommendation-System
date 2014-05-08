@@ -107,7 +107,6 @@ def retrieve():
 		if refresh == 1:
 			documents[pos][1] = str(datetime)
 			database.execute('DELETE FROM entities WHERE ent_document = '+str(documents[pos][0])+';')
-			database.execute('DELETE FROM themes WHERE thm_document = '+str(documents[pos][0])+';')
 			database.execute('UPDATE documents SET doc_processed = 0,'+\
 				' doc_datetime = \''+str(datetime)+'\','+\
 				' doc_thumbnail = \''+thumbnails[index]+'\','+\
