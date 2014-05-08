@@ -126,8 +126,8 @@ class Index:
 
 class TopicModelling:
 	def __init__(self):
-		if os.path.isfile('TopicMod/data.loc'):
-			with open('TopicMod/data.loc','rb') as f:
+		if os.path.isfile('Topic/data.loc'):
+			with open('Topic/data.loc','rb') as f:
 				load(f)
 				self.data = load(f)
 		else:
@@ -137,7 +137,7 @@ class TopicModelling:
 		self.data[doc.id] = doc.topmod['text']
 
 	def write(self):
-		with open('TopicMod/data.loc','wb') as f:
+		with open('Topic/data.loc','wb') as f:
 			dump(len(self.data),f)
 			dump(self.data,f)
 
