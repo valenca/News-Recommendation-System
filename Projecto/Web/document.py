@@ -1,6 +1,23 @@
 import cherrypy
+from cPickle import load
+from gensim.models.ldamodel import LdaModel
+from gensim import similarities
+from gensim.corpora import Dictionary
+from sqlite3 import connect
+from operator import itemgetter
+from dateutil import parser
 
 class Document(object):
+
+	def __init__(self):
+		with open('../TextMining/Topic/data.loc','rb') as f:
+			load(f)
+			self.data = load(f)
+		with open('../TextMining/Topic/translator.loc','rb') as f:
+			self.translator = load(f)
+		self.index = similarities.MatrixSimilarity.load('../TextMining/Topic/index.loc')
+		self.lda = LdaModel.load('../TextMining/Topic/lda.loc')
+		self.dictionary = Dictionary().load("../TextMining/Topic/dic.loc")
 
 	@cherrypy.expose
 	def default(self, uid='1', did='-1'):
@@ -11,7 +28,7 @@ class Document(object):
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>News Feed - Topics</title>
+	<title>News Feed - Documents</title>
 
 	<meta name="author" content="jQuery Foundation - jquery.org">
 	<meta name="description" content="jQuery: The Write Less, Do More, JavaScript Library">
@@ -55,16 +72,17 @@ class Document(object):
 		<nav id="main" class="constrain clearfix">
 			<div class="menu-top-container">
 				<ul id="menu-top" class="menu">
-					<li class="menu-item"><a href="/home">Home</a></li>
-					<li class="menu-item"><a href="/recommend">Recommended</a></li>
+					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
+					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
+					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 
-			<form method="get" class="searchform" action="https://jqueryui.com/">
+			<form method="post" class="searchform" action="/search/"""+str(uid)+"""/1">
 				<button type="submit" class="icon-search"><span class="visuallyhidden">search</span></button>
 					<label>
-					<span class="visuallyhidden">Search jQuery UI</span>
-					<input type="text" name="s" value="" placeholder="Search">
+					<span class="visuallyhidden">Search</span>
+					<input type="text" name="search" value="" placeholder="Search">
 				</label>
 			</form>
 		</nav>
@@ -72,13 +90,13 @@ class Document(object):
 		<div id="content-wrapper" class="clearfix row">
 
 			<div class="content-right twelve columns">
-				<div id="content">
+				<div id="content" style="width:75%">
 
 					""" + self.get_document(uid, did) + """
 
 				</div>
 
-				<div id="sidebar" class="widget-area" role="complementary" width=10px>
+				<div id="sidebar" class="widget-area" role="complementary" width=10px style="width:25%">
 				<aside class="widget">
 					<h3 class="widget-title">Topics</h3>
 					<ul>
@@ -90,12 +108,12 @@ class Document(object):
 						<li><a href="/topic/"""+uid+"""/6">Technology</a></li>
 						<li><a href="/topic/"""+uid+"""/7">Entertainment & Arts</a></li>
 						<li><a href="/topic/"""+uid+"""/8">Magazine</a></li>
-						<li><a href="/topic/"""+uid+"""/13">Sports</a></li>
 						<li><a href="/topic/"""+uid+"""/9">History</a></li>
-						<li><a href="/topic/"""+uid+"""/14">Capital</a></li>
-						<li><a href="/topic/"""+uid+"""/12">Nature</a></li>
 						<li><a href="/topic/"""+uid+"""/10">Consumer</a></li>
-						<li><a href="/topic/"""+uid+"""/11">Culture</a></li>
+						<li><a href="/topic/"""+uid+"""/11">Arts & Culture</a></li>
+						<li><a href="/topic/"""+uid+"""/12">Nature</a></li>
+						<li><a href="/topic/"""+uid+"""/13">Sports</a></li>
+						<li><a href="/topic/"""+uid+"""/14">Capital</a></li>
 					</ul>
 				</aside>
 				</div>
@@ -114,10 +132,6 @@ class Document(object):
 	def get_document(self, uid, did):
 		uid = int(uid)
 		did = int(did)
-
-		from sqlite3 import connect
-		from operator import itemgetter
-		from dateutil import parser
 
 		database = connect('../Database/database.db')
 
@@ -144,15 +158,15 @@ class Document(object):
 		for row in database.execute('SELECT ent_entity FROM entities where ent_document = '+str(did)+';'):
 			doc['entities'].append(str(row[0]))
 
-		for row in database.execute('SELECT hst_rating,hst_view FROM historics where hst_document = '+\
+		for row in database.execute('SELECT hst_rating FROM historics where hst_document = '+\
 			str(did)+' and hst_user = '+str(uid)+';'):
 			doc['urating'] = row[0]
-			doc['view'] = row[1]
+			doc['view'] = 1
 
 		if doc['view'] == 0:
 			database.execute('UPDATE users set usr_nviews = usr_nviews+1 where usr_id = '+str(uid)+';')
 			database.execute('UPDATE documents set doc_nviews = doc_nviews+1 where doc_id = '+str(did)+';')
-			database.execute('UPDATE historics set hst_view = 1 where hst_document = '+str(did)+' and hst_user = '+str(uid)+';')
+			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',2.5);')
 			for t in topics:
 				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
 
@@ -168,25 +182,45 @@ class Document(object):
 			</ul>
 		</div>"""
 		
-		string = '<div class="dev-links">\n'
+		string = '<div class="dev-links" style="width: 35%;">\n'
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
-		string += '<h3 style="color:303030;">Rate this document:</h3>\n'
-		string += '<h3 style="color:303030;">Tags:</h3><ul>\n'
-		for t in doc['entities']:
-			string += '<li><a href="/tag/'+str(uid)+'/'+t+'" style="color:303030;">'+t+'</a></li><ul>'
-		string += '</div>\n'
+		string += '<h3 style="color:303030;margin-bottom:5;">Rate this document:</h3>\n'
+		string += self.rating_stars(doc['urating'])
+		string += '<br><h3 style="color:303030;margin-bottom:5;">Sugested Documents:</h3><ul>\n'
+		string += self.sugested_documents(database, uid, did)
+		string += '</ul><br><h3 style="color:303030;margin-bottom:5;">Tags:</h3><ul><li>\n'
+		string += ', '.join(['<a href="/tag/'+str(uid)+'/'+t+'" style="color:303030;">'+t+'</a>' for t in doc['entities']])
+		string += '</li></ul></div>\n'
 
 		string += '<p style="color:#808080;float:left">'+doc['datetime']+'</p>\n'
 		string += '<p align="right" style="color:#808080;float:right;">'+' | '.join(doc['topics'])+'</p>\n'
 		string += '<div style="clear:left;"></div>\n'
 		string += '<h1>'+doc['title']+'</h1>\n'
 
-		string += '<table style="margin: 0em 0em"><tr style="border-bottom:15px solid #fff;;background-color:#fff">'
-		string += '<td width="170px";vertical-align=middle;>'
-		string += '<img src="'+doc['thumbnail']+'" align="left"></td>'
-		string += '<td><p style="font-weight:bold;font-size:15">'+doc['text'].split('\n')[0]+'</p>\n'
+		string += '<table style="margin: 0em 0em"><tr style="border-bottom:15px solid #fff;background-color:#fff">'
+		string += '<td width="170px";>'
+		string += '<img src="'+doc['thumbnail']+'" style="vertical-align=middle;" align="left"></td>'
+		string += '<td><p style="font-weight:bold;font-size:15;margin-bottom:0;">'+doc['text'].split('\n')[0]+'</p>\n'
 		string += '</td></tr></table>\n'
 		for p in doc['text'].split('\n')[1:]:
 			string += '<p style="font-size:15;margin-bottom: 8px;">'+p+'</p>'
 
 		return string
+
+	def sugested_documents(self, database, uid, did):
+		doc = self.data[did]
+
+		vec_bow = self.dictionary.doc2bow(doc)
+		vec_lda = self.lda[vec_bow] 
+		sims = self.index[vec_lda]
+		sims = [self.translator[s[0]] for s in sorted(enumerate(sims),key=lambda item: -item[1])[:11] if self.translator[s[0]] != did][:10]
+		
+		string = ''
+		for s in sims:
+			for row in database.execute('SELECT doc_title FROM documents where doc_id = '+str(s)+';'):
+				string += '<li><a href="/document/'+str(uid)+'/'+str(s)+'" style="color:303030;">'+str(row[0])+'</a></li>\n'
+		return string	
+
+	def rating_stars(self, urating):
+
+		return ''

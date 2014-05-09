@@ -1,4 +1,7 @@
 import cherrypy
+from sqlite3 import connect
+from operator import itemgetter
+from dateutil import parser
 
 class Topic(object):
 
@@ -8,6 +11,9 @@ class Topic(object):
 			raise cherrypy.HTTPRedirect("/topic/"+uid+"/1/1")
 		elif page > '5':
 			raise cherrypy.HTTPRedirect("/topic/"+uid+"/1/5")
+		database = connect('../Database/database.db')
+		for row in database.execute('SELECT tpc_name FROM topics where tpc_id = '+tid+';'):
+			topic = str(row[0])
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
@@ -57,16 +63,17 @@ class Topic(object):
 		<nav id="main" class="constrain clearfix">
 			<div class="menu-top-container">
 				<ul id="menu-top" class="menu">
-					<li class="menu-item"><a href="/home">Home</a></li>
-					<li class="menu-item"><a href="/recommend">Recommended</a></li>
+					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
+					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
+					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 
-			<form method="get" class="searchform" action="https://jqueryui.com/">
+			<form method="post" class="searchform" action="/search/"""+str(uid)+"""/1">
 				<button type="submit" class="icon-search"><span class="visuallyhidden">search</span></button>
 					<label>
-					<span class="visuallyhidden">Search jQuery UI</span>
-					<input type="text" name="s" value="" placeholder="Search">
+					<span class="visuallyhidden">Search</span>
+					<input type="text" name="search" value="" placeholder="Search">
 				</label>
 			</form>
 		</nav>
@@ -74,7 +81,8 @@ class Topic(object):
 		<div id="content-wrapper" class="clearfix row">
 
 			<div class="content-right twelve columns">
-				<div id="content">
+				<div id="content" style="width:75%">
+
 					""" + self.get_topic_docs(uid, tid, page) + """
 
 
@@ -84,7 +92,7 @@ class Topic(object):
 
 				</div>
 
-				<div id="sidebar" class="widget-area" role="complementary" width=10px>
+				<div id="sidebar" class="widget-area" role="complementary" width=10px style="width:25%">
 				<aside class="widget">
 					<h3 class="widget-title">Topics</h3>
 					<ul>
@@ -96,12 +104,12 @@ class Topic(object):
 						<li><a href="/topic/"""+uid+"""/6">Technology</a></li>
 						<li><a href="/topic/"""+uid+"""/7">Entertainment & Arts</a></li>
 						<li><a href="/topic/"""+uid+"""/8">Magazine</a></li>
-						<li><a href="/topic/"""+uid+"""/13">Sports</a></li>
 						<li><a href="/topic/"""+uid+"""/9">History</a></li>
-						<li><a href="/topic/"""+uid+"""/14">Capital</a></li>
-						<li><a href="/topic/"""+uid+"""/12">Nature</a></li>
 						<li><a href="/topic/"""+uid+"""/10">Consumer</a></li>
-						<li><a href="/topic/"""+uid+"""/11">Culture</a></li>
+						<li><a href="/topic/"""+uid+"""/11">Arts & Culture</a></li>
+						<li><a href="/topic/"""+uid+"""/12">Nature</a></li>
+						<li><a href="/topic/"""+uid+"""/13">Sports</a></li>
+						<li><a href="/topic/"""+uid+"""/14">Capital</a></li>
 					</ul>
 				</aside>
 				</div>
@@ -137,10 +145,6 @@ class Topic(object):
 		uid = int(uid)
 		page = int(page)
 
-		from sqlite3 import connect
-		from operator import itemgetter
-		from dateutil import parser
-
 		database = connect('../Database/database.db')
 
 		docids = []
@@ -153,27 +157,35 @@ class Topic(object):
 
 		for n,did in enumerate(docids):
 			for row in database.execute('SELECT doc_id,doc_rating,doc_nviews from documents'+\
-				' where doc_id = '+str(did)+' ;'):
+				' where doc_id = '+str(did)+';'):
 				docs[n]['id'] = row[0]
 				docs[n]['rating'] = row[1]/5.0
 				docs[n]['views'] = row[2]
 				if row[2] > max_views: max_views = row[2]
-			for row in database.execute('SELECT hst_rating,hst_view from historics'+\
+			for row in database.execute('SELECT hst_rating from historics'+\
 				' where hst_document = '+str(did)+' and hst_user = '+str(uid)+';'):
 				docs[n]['urating'] = row[0]/5.0
-				docs[n]['view'] = row[1]
-			for row in database.execute('SELECT tpp_nviews/usr_nviews, tpp_rating from users,'+\
-			    'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+';'):
-				docs[n]['preftv'] = row[0]
-				docs[n]['preftr'] = row[1]/5.0
+				docs[n]['view'] = 1
+			docs[n]['topics'] = []
+			for row in database.execute('SELECT tpc_id from topics,tpc_doc'+\
+				' where tpc_id = tpd_topic and tpd_document = '+str(did)+';'):
+				docs[n]['topics'].append(row[0])
+			docs[n]['preftv'] = 0; docs[n]['preftr'] = 0
+			for t in docs[n]['topics']:
+				for row in database.execute('SELECT tpp_nviews/usr_nviews, tpp_rating from users,'+\
+					'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+' and tpp_topic = '+str(t)+';'):
+					docs[n]['preftv'] += row[0] if row[0] is not None else 0
+					docs[n]['preftr'] += row[1]/5.0
+			docs[n]['preftr'] /= float(len(docs[n]['topics']))
+			docs[n]['preftv'] /= float(len(docs[n]['topics']))
 
 		if max_views != 0:
 			for doc in docs:
 				doc['views'] /= 1.0 * max_views
 
 		for doc in docs:
-			doc['score'] = 0.35*doc['view'] + 1.75*doc['rating'] + 1.25*doc['urating'] + \
-			               2.5*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
+			doc['score'] = 0.35*doc['view'] + 2*doc['rating'] + 1.5*doc['urating'] + \
+						   2*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
 
 		docs.sort(key=itemgetter('score'), reverse = True)
 		docs = docs[(page-1)*10:page*10]
@@ -182,14 +194,16 @@ class Topic(object):
 			for row in database.execute('SELECT doc_datetime,doc_thumbnail,doc_title,doc_description'+\
 			' from documents where doc_id = '+str(did)+';'):
 				if docs[n]['view'] == 1: opacity = '0.6'; color = '#909090'
-				else:                    opacity = '1'; color = '#303030'
-				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";'+\
-					' vertical-align=middle;><img src="'+str(row[1])+'" style="opacity:'+opacity+';"></td>')
+				else:					opacity = '1'; color = '#303030'
+				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";>'+\
+					'<img src="'+str(row[1])+'" style="opacity:'+opacity+';""></td>')
 				strings[-1] += '<td><h2><a href="/document/'+str(uid)+'/'+str(did)+\
 					'" style="color:'+color+';">' + str(row[2]) + '</a></h2>\n'
 				strings[-1] += '<p style="color:#606060; font-size:15"><span style="color:#A0A0A0">'
 				strings[-1] += parser.parse(str(row[0])).strftime('%d/%m/%Y')+'</span>'
-				strings[-1] += ' - ' + str(row[3]) + '</p></td></tr></table>\n'
+				if str(row[3]) != '':
+					strings[-1] += ' - ' + str(row[3])
+				strings[-1] += '</p></td></tr></table>\n'
 				#strings[-1] += '\n<hr class="dots"/>\n'
 
 		return ''.join(strings)

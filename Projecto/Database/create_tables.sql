@@ -50,8 +50,7 @@ CREATE TABLE entities (
 CREATE TABLE historics (
 	hst_user INTEGER NOT NULL REFERENCES users(usr_id),
 	hst_document INTEGER NOT NULL REFERENCES documents(doc_id),
-	hst_rating INTEGER NOT NULL DEFAULT -1,
-	hst_view INTEGER NOT NULL DEFAULT 0,
+	hst_rating INTEGER NOT NULL DEFAULT 2.5,
 	PRIMARY KEY (hst_user, hst_document)
 );
 

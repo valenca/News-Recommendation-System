@@ -1,32 +1,22 @@
 import cherrypy
-from topic import Topic
-from document import Document
-from tag import Tag
-from recommend import Recommend
-from search import Search
-from advsearch import AdvSearch
 from sqlite3 import connect
 from operator import itemgetter
 from dateutil import parser
 
-class Home(object):
+class Recommend(object):
 
 	@cherrypy.expose
-	def index(self, uid='1'):
-		raise cherrypy.HTTPRedirect("/home/1")
-
-	@cherrypy.expose
-	def home(self, uid='1',page='1'):
+	def default(self, uid='1',page='1'):
 		if page < '1':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/1")
+			raise cherrypy.HTTPRedirect("/recommend/"+uid+"/1")
 		elif page > '5':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/5")
+			raise cherrypy.HTTPRedirect("/recommend/"+uid+"/5")
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>News Feed - Home</title>
+	<title>News Feed - Recommendation</title>
 
 	<meta name="author" content="jQuery Foundation - jquery.org">
 	<meta name="description" content="jQuery: The Write Less, Do More, JavaScript Library">
@@ -89,11 +79,11 @@ class Home(object):
 
 			<div class="content-right twelve columns">
 				<div id="content" style="width:75%">
-					""" + self.get_home_docs(uid, page) + """
+					""" + self.get_recommend_docs(uid, page) + """
 
 
 					<div class="pagination">
-						""" + self.home_pagination(uid, page) + """
+						""" + self.recommend_pagination(uid, page) + """
 					</div>
 
 				</div>
@@ -130,32 +120,33 @@ class Home(object):
 </body>
 </html>"""
 
-	def home_pagination(self, uid='1', page='1'):
+	def recommend_pagination(self, uid='1', page='1'):
 
 		string = ''
 		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/1'\"><b>1</b></a>\n"
+		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/1'\"><b>1</b></a>\n"
 		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/2'\"><b>2</b></a>\n"
+		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/2'\"><b>2</b></a>\n"
 		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/3'\"><b>3</b></a>\n"
+		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/3'\"><b>3</b></a>\n"
 		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/4'\"><b>4</b></a>\n"
+		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/4'\"><b>4</b></a>\n"
 		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/5'\"><b>5</b></a>\n"
+		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/5'\"><b>5</b></a>\n"
 
 		return string
 
-	def get_home_docs(self, uid='1', page='1'):
+	def get_recommend_docs(self, uid='1', page='1'):
 		uid = int(uid)
 		page = int(page)
 
 		database = connect('../Database/database.db')
 
 		docids = []
-		for row in database.execute('SELECT doc_id FROM documents;'):
+		for row in database.execute('select doc_id from documents where doc_id not in '+\
+			'(select hst_document from historics where hst_user = '+str(uid)+');'):
 			docids.append(row[0])
-		docs = [{'urating':2.5,'view':0} for i in range(len(docids))]
+		docs = [{} for i in range(len(docids))]
 
 		max_views = 0
 
@@ -166,10 +157,6 @@ class Home(object):
 				docs[n]['rating'] = row[1]/5.0
 				docs[n]['views'] = row[2]
 				if row[2] > max_views: max_views = row[2]
-			for row in database.execute('SELECT hst_rating from historics'+\
-				' where hst_document = '+str(did)+' and hst_user = '+str(uid)+';'):
-				docs[n]['urating'] = row[0]/5.0
-				docs[n]['view'] = 1
 			docs[n]['topics'] = []
 			for row in database.execute('SELECT tpc_id from topics,tpc_doc'+\
 				' where tpc_id = tpd_topic and tpd_document = '+str(did)+';'):
@@ -188,8 +175,7 @@ class Home(object):
 				doc['views'] /= 1.0 * max_views
 
 		for doc in docs:
-			doc['score'] = 0.35*doc['view'] + 2*doc['rating'] + 1.5*doc['urating'] + \
-						   2*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
+			doc['score'] = 3*doc['rating'] + 4*doc['views'] + doc['preftv']*1.5 + doc['preftr']*1.5
 
 		docs.sort(key=itemgetter('score'), reverse = True)
 		docs = docs[(page-1)*10:page*10]
@@ -197,8 +183,7 @@ class Home(object):
 		for n,did in enumerate([doc['id'] for doc in docs]):
 			for row in database.execute('SELECT doc_datetime,doc_thumbnail,doc_title,doc_description'+\
 			' from documents where doc_id = '+str(did)+';'):
-				if docs[n]['view'] == 1: opacity = '0.6'; color = '#909090'
-				else:					opacity = '1'; color = '#303030'
+				opacity = '1'; color = '#303030'
 				strings.append('<table><tr style="border-bottom: 1px solid #666;"><td width="170px";>'+\
 					'<img src="'+str(row[1])+'" style="opacity:'+opacity+';""></td>')
 				strings[-1] += '<td><h2><a href="/document/'+str(uid)+'/'+str(did)+\
@@ -211,15 +196,3 @@ class Home(object):
 				#strings[-1] += '\n<hr class="dots"/>\n'
 
 		return ''.join(strings)
-
-if __name__ == '__main__':
-	root = Home()
-	root.topic = Topic()
-	root.document = Document()
-	root.tag = Tag()
-	root.recommend = Recommend()
-	root.search = Search()
-	root.advsearch = AdvSearch()
-	#cherrypy.server.socket_host = '10.3.3.196'
-	#cherrypy.engine.start()
-	cherrypy.quickstart(root)
