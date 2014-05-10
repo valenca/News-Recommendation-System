@@ -1,32 +1,20 @@
 import cherrypy
-from topic import Topic
-from document import Document
-from tag import Tag
-from recommend import Recommend
-from search import Search
-from advsearch import AdvSearch
 from sqlite3 import connect
 from operator import itemgetter
 from dateutil import parser
 
-class Home(object):
+class Tag(object):
 
 	@cherrypy.expose
-	def index(self, uid='1'):
-		raise cherrypy.HTTPRedirect("/home/1")
-
-	@cherrypy.expose
-	def home(self, uid='1',page='1'):
-		if page < '1':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/1")
-		elif page > '5':
-			raise cherrypy.HTTPRedirect("/home/"+uid+"/5")
+	def default(self, uid='1', tag='-1', page='1'):
+		if tag == '-1':
+			raise cherrypy.HTTPRedirect("/home/"+uid)
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>News Feed - Home</title>
+	<title>News Feed - Tags</title>
 
 	<meta name="author" content="jQuery Foundation - jquery.org">
 	<meta name="description" content="jQuery: The Write Less, Do More, JavaScript Library">
@@ -89,11 +77,12 @@ class Home(object):
 
 			<div class="content-right twelve columns">
 				<div id="content" style="width:75%">
-					""" + self.get_home_docs(uid, page) + """
+
+					""" + self.get_tag_docs(uid, tag, page) + """
 
 
 					<div class="pagination">
-						""" + self.home_pagination(uid, page) + """
+						""" + self.tag_pagination(uid, tag, page) + """
 					</div>
 
 				</div>
@@ -127,35 +116,37 @@ class Home(object):
 	</footer>
 
 
+
 </body>
 </html>"""
 
-	def home_pagination(self, uid='1', page='1'):
+	def tag_pagination(self, uid, tag, page):
 
 		string = ''
 		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/1'\"><b>1</b></a>\n"
+		else: string += "<a class='page-numbers' href='/tag/"+uid+"/"+tag+"/1'\"><b>1</b></a>\n"
 		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/2'\"><b>2</b></a>\n"
+		else: string += "<a class='page-numbers' href='/tag/"+uid+"/"+tag+"/2'\"><b>2</b></a>\n"
 		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/3'\"><b>3</b></a>\n"
+		else: string += "<a class='page-numbers' href='/tag/"+uid+"/"+tag+"/3'\"><b>3</b></a>\n"
 		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/4'\"><b>4</b></a>\n"
+		else: string += "<a class='page-numbers' href='/tag/"+uid+"/"+tag+"/4'\"><b>4</b></a>\n"
 		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/home/"+uid+"/5'\"><b>5</b></a>\n"
+		else: string += "<a class='page-numbers' href='/tag/"+uid+"/"+tag+"/5'\"><b>5</b></a>\n"
 
 		return string
 
-	def get_home_docs(self, uid='1', page='1'):
+	def get_tag_docs(self, uid, tag, page):
 		uid = int(uid)
 		page = int(page)
 
 		database = connect('../Database/database.db')
 
 		docids = []
-		for row in database.execute('SELECT doc_id FROM documents;'):
+		for row in database.execute('SELECT doc_id FROM documents,entities where doc_id = ent_document'+\
+			' and ent_entity = "'+tag+'";'):
 			docids.append(row[0])
-		docs = [{'urating':2,'view':0} for i in range(len(docids))]
+		docs = [{'urating':2,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
 
 		max_views = 0
 
@@ -211,15 +202,3 @@ class Home(object):
 				#strings[-1] += '\n<hr class="dots"/>\n'
 
 		return ''.join(strings)
-
-if __name__ == '__main__':
-	root = Home()
-	root.topic = Topic()
-	root.document = Document()
-	root.tag = Tag()
-	root.recommend = Recommend()
-	root.search = Search()
-	root.advsearch = AdvSearch()
-	#cherrypy.server.socket_host = '10.3.3.196'
-	#cherrypy.engine.start()
-	cherrypy.quickstart(root)

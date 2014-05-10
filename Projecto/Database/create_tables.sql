@@ -16,7 +16,7 @@ CREATE TABLE documents (
 	doc_title TEXT NOT NULL,
 	doc_description TEXT NOT NULL,
 	doc_text TEXT NOT NULL,
-	doc_rating REAL NOT NULL DEFAULT 2.5,
+	doc_rating REAL NOT NULL DEFAULT 2,
 	doc_nratings INTEGER NOT NULL DEFAULT 0,
 	doc_nviews INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY (doc_id)
@@ -50,8 +50,7 @@ CREATE TABLE entities (
 CREATE TABLE historics (
 	hst_user INTEGER NOT NULL REFERENCES users(usr_id),
 	hst_document INTEGER NOT NULL REFERENCES documents(doc_id),
-	hst_rating INTEGER NOT NULL DEFAULT -1,
-	hst_view INTEGER NOT NULL DEFAULT 0,
+	hst_rating INTEGER NOT NULL DEFAULT 2.5,
 	PRIMARY KEY (hst_user, hst_document)
 );
 
