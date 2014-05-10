@@ -146,7 +146,7 @@ class Tag(object):
 		for row in database.execute('SELECT doc_id FROM documents,entities where doc_id = ent_document'+\
 			' and ent_entity = "'+tag+'";'):
 			docids.append(row[0])
-		docs = [{'urating':2.5,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
+		docs = [{'urating':2,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
 
 		max_views = 0
 

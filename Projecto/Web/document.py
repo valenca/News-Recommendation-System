@@ -135,7 +135,7 @@ class Document(object):
 
 		database = connect('../Database/database.db')
 
-		doc={'urating':2.5,'view':0}
+		doc={'urating':2,'view':0}
 		for row in database.execute('SELECT doc_datetime,doc_link,doc_thumbnail,doc_title,doc_description,'+\
 			'doc_text,doc_rating,doc_nviews FROM documents where doc_id = '+str(did)+';'):
 			doc['datetime']=parser.parse(str(row[0])).strftime('%d/%m/%Y - %H:%M:%S')

@@ -16,7 +16,7 @@ CREATE TABLE documents (
 	doc_title TEXT NOT NULL,
 	doc_description TEXT NOT NULL,
 	doc_text TEXT NOT NULL,
-	doc_rating REAL NOT NULL DEFAULT 2.5,
+	doc_rating REAL NOT NULL DEFAULT 2,
 	doc_nratings INTEGER NOT NULL DEFAULT 0,
 	doc_nviews INTEGER NOT NULL DEFAULT 0,
 	PRIMARY KEY (doc_id)

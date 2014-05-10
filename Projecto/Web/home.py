@@ -155,7 +155,7 @@ class Home(object):
 		docids = []
 		for row in database.execute('SELECT doc_id FROM documents;'):
 			docids.append(row[0])
-		docs = [{'urating':2.5,'view':0} for i in range(len(docids))]
+		docs = [{'urating':2,'view':0} for i in range(len(docids))]
 
 		max_views = 0
 

@@ -151,7 +151,7 @@ class Topic(object):
 		for row in database.execute('SELECT doc_id FROM documents,tpc_doc where doc_id = tpd_document'+\
 			' and tpd_topic = '+tid+';'):
 			docids.append(row[0])
-		docs = [{'urating':2.5,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
+		docs = [{'urating':2,'view':0,'preftv':0,'preftr':2.5} for i in range(len(docids))]
 
 		max_views = 0
 

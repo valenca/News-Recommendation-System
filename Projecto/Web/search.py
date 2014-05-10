@@ -165,7 +165,7 @@ class Search(object):
 		results = []
 		max_score = 0
 		for i in range(len(raw_results[:])):
-			results.append({'urating':2.5,'view':0})
+			results.append({'urating':2,'view':0})
 			results[-1]['id'] = int(raw_results[i]['id'])
 			results[-1]['score'] = float(raw_results.score(i))
 			if results[-1]['score'] > max_score: max_score = results[-1]['score']
