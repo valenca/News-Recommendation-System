@@ -25,7 +25,6 @@ class Home(object):
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<link rel="stylesheet" type="text/css" href="styles.css">
 
 	<title>News Feed - Home</title>
 

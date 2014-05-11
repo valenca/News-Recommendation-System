@@ -236,4 +236,5 @@ class Document(object):
 		return string	
 
 	def rating_stars(self, urating):
+		if urating == -1: urating = 2;
 		return '<div class="rating" style="font-size:25px">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
