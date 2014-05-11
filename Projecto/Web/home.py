@@ -25,6 +25,7 @@ class Home(object):
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<link rel="stylesheet" type="text/css" href="styles.css">
 
 	<title>News Feed - Home</title>
 
@@ -43,6 +44,33 @@ class Home(object):
 	<link rel="stylesheet" href="http://jquery.com/jquery-wp-content/themes/jquery/css/base.css?v=1">
 	<link rel="stylesheet" href="http://jquery.com/jquery-wp-content/themes/jquery.com/style.css">
 	<link rel="pingback" href="http://jquery.com/xmlrpc.php" />
+
+	<style media="screen" type="text/css">
+
+	.rating {
+	  	unicode-bidi: bidi-override;
+	  	direction: rtl;
+	  	text-align: center;
+	}
+	.rating > span {
+	  	display: inline-block;
+	  	position: relative;
+	  	width: 1.1em;
+	}
+	.rating > span:hover,
+	.rating > span:hover ~ span {
+	  	color: transparent;
+	}
+	.rating > span:hover:before,
+	.rating > span:hover ~ span:before {
+	   	content: "\\2605";
+	   	position: absolute;
+	   	left: 0; 
+	   	color: black;
+	}
+
+	</style>
+
 	<!--[if lt IE 7]><link rel="stylesheet" href="css/font-awesome-ie7.min.css"><![endif]-->
 
 	<script src="http://jquery.com/jquery-wp-content/themes/jquery/js/modernizr.custom.2.6.2.min.js"></script>
@@ -61,12 +89,14 @@ class Home(object):
 
 </head>
 <body class="jquery home page page-id-5 page-template page-template-page-fullwidth-php page-slug-index single-author singular">
-
 	<div id="container">
 		<div id="logo-events" class="constrain clearfix">
 			<h2> </h2>
 		</div>
 
+		<div class="rating">
+			<span>&#9734</span><span>&#9734</span><span>&#9734</span><span>&#9734</span><span>&#9734</span>
+		</div>
 		<nav id="main" class="constrain clearfix">
 			<div class="menu-top-container">
 				<ul id="menu-top" class="menu">
@@ -220,6 +250,6 @@ if __name__ == '__main__':
 	root.recommend = Recommend()
 	root.search = Search()
 	root.advsearch = AdvSearch()
-	#cherrypy.server.socket_host = '10.3.3.196'
-	#cherrypy.engine.start()
+	cherrypy.server.socket_host = '192.168.1.95'
+	cherrypy.engine.start()
 	cherrypy.quickstart(root)
