@@ -250,6 +250,6 @@ if __name__ == '__main__':
 	root.recommend = Recommend()
 	root.search = Search()
 	root.advsearch = AdvSearch()
-	cherrypy.server.socket_host = '192.168.1.95'
-	cherrypy.engine.start()
+	#cherrypy.server.socket_host = '192.168.1.95'
+	#cherrypy.engine.start()
 	cherrypy.quickstart(root)
