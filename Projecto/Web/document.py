@@ -45,6 +45,33 @@ class Document(object):
 	<link rel="stylesheet" href="http://jquery.com/jquery-wp-content/themes/jquery/css/base.css?v=1">
 	<link rel="stylesheet" href="http://jquery.com/jquery-wp-content/themes/jquery.com/style.css">
 	<link rel="pingback" href="http://jquery.com/xmlrpc.php" />
+
+	<style media="screen" type="text/css">
+
+	.rating {
+	  	unicode-bidi: bidi-override;
+	  	direction: rtl;
+	  	text-align: center;
+	}
+	.rating > span {
+	  	display: inline-block;
+	  	position: relative;
+	  	width: 1.1em;
+	}
+	.rating > span:hover,
+	.rating > span:hover ~ span {
+	  	color: transparent;
+	}
+	.rating > span:hover:before,
+	.rating > span:hover ~ span:before {
+	   	content: "\\2605";
+	   	position: absolute;
+	   	#left: 0; 
+	   	color: CornflowerBlue;
+	}
+
+	</style>
+
 	<!--[if lt IE 7]><link rel="stylesheet" href="css/font-awesome-ie7.min.css"><![endif]-->
 
 	<script src="http://jquery.com/jquery-wp-content/themes/jquery/js/modernizr.custom.2.6.2.min.js"></script>
@@ -222,5 +249,4 @@ class Document(object):
 		return string	
 
 	def rating_stars(self, urating):
-
-		return ''
+		return '<div class="rating">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'
