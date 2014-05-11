@@ -169,18 +169,6 @@ class Document(object):
 			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',2.5);')
 			for t in topics:
 				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
-
-		"""<div class="dev-links">
-			<h3>Developer Links</h3>
-			<ul>
-				<li><a href="https://github.com/jquery/jquery-ui">Source Code (GitHub)</a></li>
-				<li><a href="http://code.jquery.com/ui/jquery-ui-git.js">jQuery UI Git (WIP Build)</a>
-					<ul>
-						<li><a href="http://code.jquery.com/ui/jquery-ui-git.css">Theme (WIP Build)</a></li>
-					</ul>
-				</li>
-			</ul>
-		</div>"""
 		
 		string = '<div class="dev-links" style="width: 35%;">\n'
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
