@@ -51,7 +51,7 @@ class Document(object):
 	.rating {
 	  	unicode-bidi: bidi-override;
 	  	direction: rtl;
-	  	text-align: center;
+	  	text-align: left;
 	}
 	.rating > span {
 	  	display: inline-block;
@@ -236,4 +236,4 @@ class Document(object):
 		return string	
 
 	def rating_stars(self, urating):
-		return '<div class="rating">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'</div>'
+		return '<div class="rating" style="font-size:25px">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
