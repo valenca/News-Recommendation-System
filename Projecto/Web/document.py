@@ -56,7 +56,7 @@ class Document(object):
 	.rating > span {
 	  	display: inline-block;
 	  	position: relative;
-	  	width: 1.1em;
+	  	width: 1.0em;
 	}
 	.rating > span:hover,
 	.rating > span:hover ~ span {
@@ -95,7 +95,6 @@ class Document(object):
 		<div id="logo-events" class="constrain clearfix">
 			<h2> </h2>
 		</div>
-
 		<nav id="main" class="constrain clearfix">
 			<div class="menu-top-container">
 				<ul id="menu-top" class="menu">
