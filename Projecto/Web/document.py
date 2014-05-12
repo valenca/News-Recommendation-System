@@ -49,9 +49,10 @@ class Document(object):
 	<style media="screen" type="text/css">
 
 	.rating {
+		font-size:25px;
 	  	unicode-bidi: bidi-override;
 	  	direction: rtl;
-	  	text-align: center;
+	  	text-align: left;
 	}
 	.rating > span {
 	  	display: inline-block;
@@ -195,18 +196,6 @@ class Document(object):
 			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',2.5);')
 			for t in topics:
 				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
-
-		"""<div class="dev-links">
-			<h3>Developer Links</h3>
-			<ul>
-				<li><a href="https://github.com/jquery/jquery-ui">Source Code (GitHub)</a></li>
-				<li><a href="http://code.jquery.com/ui/jquery-ui-git.js">jQuery UI Git (WIP Build)</a>
-					<ul>
-						<li><a href="http://code.jquery.com/ui/jquery-ui-git.css">Theme (WIP Build)</a></li>
-					</ul>
-				</li>
-			</ul>
-		</div>"""
 		
 		string = '<div class="dev-links" style="width: 35%;">\n'
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
@@ -248,4 +237,4 @@ class Document(object):
 		return string	
 
 	def rating_stars(self, urating):
-		return '<div class="rating">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>' + '</div>'
+		return '<div class="rating">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
