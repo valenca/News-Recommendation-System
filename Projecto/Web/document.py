@@ -100,7 +100,6 @@ class Document(object):
 				<ul id="menu-top" class="menu">
 					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
 					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
-					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 
@@ -192,7 +191,7 @@ class Document(object):
 		if doc['view'] == 0:
 			database.execute('UPDATE users set usr_nviews = usr_nviews+1 where usr_id = '+str(uid)+';')
 			database.execute('UPDATE documents set doc_nviews = doc_nviews+1 where doc_id = '+str(did)+';')
-			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',2.5);')
+			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',-1);')
 			for t in topics:
 				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
 		

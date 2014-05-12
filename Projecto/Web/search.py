@@ -2,6 +2,9 @@ import cherrypy
 from sqlite3 import connect
 from operator import itemgetter
 from dateutil import parser
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import pytz
 
 from whoosh.index import open_dir
 from whoosh.qparser.dateparse import DateParserPlugin
@@ -14,11 +17,7 @@ class Search(object):
 		self.index = open_dir('../TextMining/Index')
 
 	@cherrypy.expose()
-	def default(self, uid='1', typ='1', page='1', search=''):
-		if page < '1':
-			raise cherrypy.HTTPRedirect("/search/"+uid+"/"+typ+"/1/"+search)
-		elif page > '5':
-			raise cherrypy.HTTPRedirect("/search/"+uid+"/"+typ+"/5/"+search)
+	def default(self,uid='1',typ='1',page='1',search='',topt='0',dopt='0',hopt='0'):
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
@@ -70,7 +69,6 @@ class Search(object):
 				<ul id="menu-top" class="menu">
 					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
 					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
-					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 
@@ -88,10 +86,10 @@ class Search(object):
 			<div class="content-right twelve columns">
 				<div id="content" style="width:75%">
 
-					""" + self.get_search(uid,typ,page,search) + """
+					""" + self.get_search(uid,typ,page,search,topt,dopt,hopt) + """
 
 					<div class="pagination">
-						""" + self.search_pagination(uid,typ,page,search) + """
+						""" + self.search_pagination(uid,typ,page,search,topt,dopt,hopt) + """
 					</div>
 
 				</div>
@@ -129,29 +127,23 @@ class Search(object):
 </body>
 </html>"""
 
-	def search_pagination(self, uid, typ, page, search):
+	def search_pagination(self, uid, typ, page, search, topt, dopt ,hopt):
 
 		string = ''
 		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/1/"+search+"'\"><b>1</b></a>\n"
+		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/1/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>1</b></a>\n"
 		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/2/"+search+"'\"><b>2</b></a>\n"
+		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/2/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>2</b></a>\n"
 		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/3/"+search+"'\"><b>3</b></a>\n"
+		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/3/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>3</b></a>\n"
 		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/4/"+search+"'\"><b>4</b></a>\n"
+		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/4/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>4</b></a>\n"
 		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/5/"+search+"'\"><b>5</b></a>\n"
+		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/5/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>5</b></a>\n"
 
 		return string
 
-	def get_search(self, uid='1', typ='1', page='1', search=''):
-		if typ == '1':
-			return self.get_normal_search(uid, page, search)
-		else:
-			return self.get_adv_search(uid, page, search)
-
-	def get_normal_search(self, uid, page, search):
+	def get_search(self, uid, typ, page, search, topt, dopt, hopt):
 		uid = int(uid)
 		page = int(page)
 
@@ -160,11 +152,19 @@ class Search(object):
 		parser.add_plugin(DateParserPlugin())
 
 		myquery = parser.parse(' OR '.join((search.split())))
-		raw_results = searcher.search_page(myquery, page, pagelen=10)
+
+		if typ == '1':
+			raw_results = searcher.search(myquery, limit=page*10)
+			raw_results.fragmenter.surround = 30
+			list_results = list(range((page-1)*10, min(len(raw_results),page*10)))
+		elif typ == '2':
+			raw_results = searcher.search(myquery, limit=None)
+			raw_results.fragmenter.surround = 30
+			list_results = self.get_faceted(raw_results, uid, topt, dopt, hopt)
 
 		results = []
 		max_score = 0
-		for i in range(len(raw_results[:])):
+		for i in list_results:
 			results.append({'urating':2,'view':0})
 			results[-1]['id'] = int(raw_results[i]['id'])
 			results[-1]['score'] = float(raw_results.score(i))
@@ -175,7 +175,7 @@ class Search(object):
 			if raw_results[i].highlights("s_description") != '':
 				results[-1]['s_description'] = raw_results[i].highlights("s_description")
 			else: results[-1]['s_description'] = raw_results[i]["s_description"]
-			results[-1]['s_text'] = raw_results[i].highlights("s_text",top=5).replace('...',' ... ')
+			results[-1]['s_text'] = raw_results[i].highlights("s_text",top=3).replace('...',' ... ')
 		for r in results: r['score'] /= float(max_score)
 
 		database = connect('../Database/database.db')
@@ -214,7 +214,7 @@ class Search(object):
 						   1.5*r['views'] + r['preftv']*0.375 + r['preftr']*0.375
 
 		results.sort(key=itemgetter('score'), reverse = True)
-		string = ''
+		string = self.faceted_html(uid, search, topt, dopt, hopt)
 		for r in results:
 			string += '<table><tr style="border-bottom: 1px solid #666;"><td width="170px";>\n'
 			string += '<img src="'+r['thumbnail']+'";""></td>'
@@ -226,5 +226,64 @@ class Search(object):
 
 		return string
 
-	def get_adv_search(self, uid, search):
-		pass
+	def faceted_html(self, uid, search, topt, dopt, hopt):
+		topics = ['Any topic','Business','Politics','Health','Education','Science & Environment','Technology',
+		'Entertainment & Arts','Magazine','History','Consumer','Arts & Culture','Nature','Sports','Capital']
+		documents = ['Any time','Last hour','Last day','Last week','Last month','Last year']
+		historics = ['Any document','Viewed documents','Non-viewed documents']
+		string = '<div class="dev-links" style="width: 100%;">\n'
+		string += '<form method="post" class="searchform" action="/search/'+str(uid)+'/2/1/'+search+'">\n'
+		string += '<select name="topt" style="font-size:15;background-color:#FFF;" onchange="this.form.submit()">'
+		for i in range(15):
+			string += '<option '
+			if topt == str(i): string += 'selected '
+			string += 'value="'+str(i)+'">'+topics[i]+'</option>\n'
+		string += '</select>&nbsp&nbsp&nbsp\n'
+		string += '<select name="dopt" style="font-size:15;background-color:#FFF;" onchange="this.form.submit()">'
+		for i in range(6):
+			string += '<option '
+			if dopt == str(i): string += 'selected '
+			string += 'value="'+str(i)+'">'+documents[i]+'</option>\n'
+		string += '</select>&nbsp&nbsp&nbsp\n'
+		string += '<select name="hopt" style="font-size:15;background-color:#FFF;" onchange="this.form.submit()">'
+		for i in range(3):
+			string += '<option '
+			if hopt == str(i): string += 'selected '
+			string += 'value="'+str(i)+'">'+historics[i]+'</option>\n'
+		string += '</select>\n'
+		string += '</form></div>\n'
+		return string
+
+	def get_faceted(self, raw_results, uid, topt, dopt, hopt):
+		list_results = []
+		ids = [int(r['id']) for r in raw_results]
+
+		database = connect('../Database/database.db')
+		for i in range(len(ids)):
+			if topt != '0':
+				topics = []
+				for row in database.execute('SELECT tpd_topic from tpc_doc where tpd_document = '+str(ids[i])):
+					topics.append(str(row[0]))
+				if topt not in topics:
+					continue
+			if dopt != '0':
+				now_date = datetime.now()
+				for row in database.execute('SELECT doc_datetime from documents where doc_id = '+str(ids[i])):
+					doc_date = parser.parse(row[0])
+				if dopt  == '1': delta = relativedelta(hours = 1)
+				elif dopt  == '2': delta = relativedelta(days = 1)
+				elif dopt  == '3': delta = relativedelta(weeks = 1)
+				elif dopt  == '4': delta = relativedelta(months = 1)
+				elif dopt  == '5': delta = relativedelta(years = 1)
+				if doc_date < pytz.utc.localize(now_date-delta):
+					continue
+			if hopt != '0':
+				viewed = '2'
+				for row in database.execute('SELECT hst_rating from historics'+\
+				' where hst_document = '+str(ids[i])+' and hst_user = '+str(uid)+';'):
+					viewed = '1'
+				if hopt != viewed:
+					continue
+			list_results.append(i)
+
+		return list_results
