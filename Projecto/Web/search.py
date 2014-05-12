@@ -175,7 +175,9 @@ class Search(object):
 			if raw_results[i].highlights("s_description") != '':
 				results[-1]['s_description'] = raw_results[i].highlights("s_description")
 			else: results[-1]['s_description'] = raw_results[i]["s_description"]
-			results[-1]['s_text'] = raw_results[i].highlights("s_text",top=3).replace('...',' ... ')
+			if raw_results[i].highlights("s_text") != '':
+				results[-1]['s_text'] = raw_results[i].highlights("s_text",top=3).replace('...',' ... ')
+			else: results[-1]['s_text'] = raw_results[i]["s_text"][:200] + ' ...'
 		for r in results: r['score'] /= float(max_score)
 
 		database = connect('../Database/database.db')
