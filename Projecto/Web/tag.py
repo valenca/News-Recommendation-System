@@ -60,7 +60,6 @@ class Tag(object):
 				<ul id="menu-top" class="menu">
 					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
 					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
-					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 

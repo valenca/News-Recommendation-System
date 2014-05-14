@@ -25,7 +25,6 @@ class Home(object):
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<link rel="stylesheet" type="text/css" href="styles.css">
 
 	<title>News Feed - Home</title>
 
@@ -72,7 +71,6 @@ class Home(object):
 				<ul id="menu-top" class="menu">
 					<li class="menu-item"><a href="/home/"""+str(uid)+"""">Home</a></li>
 					<li class="menu-item"><a href="/recommend/"""+str(uid)+"""">Recommended</a></li>
-					<li class="menu-item" style="float:right"><a href="/advsearch/"""+str(uid)+"""">Advanced Search</a></li>
 				</ul>
 			</div>
 
