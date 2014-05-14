@@ -9,7 +9,7 @@ from dateutil import parser
 
 class Document(object):
 
-	def __init__(self):
+	def __init__(self, ac):
 		with open('../TextMining/Topic/data.loc','rb') as f:
 			load(f)
 			self.data = load(f)
@@ -18,6 +18,7 @@ class Document(object):
 		self.index = similarities.MatrixSimilarity.load('../TextMining/Topic/index.loc')
 		self.lda = LdaModel.load('../TextMining/Topic/lda.loc')
 		self.dictionary = Dictionary().load("../TextMining/Topic/dic.loc")
+		self.ac_terms = ac
 
 	@cherrypy.expose
 	def default(self, uid='1', did='-1'):
@@ -26,18 +27,8 @@ class Document(object):
 		return """
 <head data-live-domain="jquery.com">
 	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
 	<title>News Feed - Documents</title>
-
-	<meta name="author" content="jQuery Foundation - jquery.org">
-	<meta name="description" content="jQuery: The Write Less, Do More, JavaScript Library">
-
-	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-	<meta http-equiv="Pragma" content="no-cache" />
-	<meta http-equiv="Expires" content="0" />
-
-	<meta name="viewport" content="width=device-width">
 
 	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jquery/css/base.css?v=1">
 	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jqueryui.com/style.css">
@@ -78,7 +69,6 @@ class Document(object):
 	<script src="http://jquery.com/jquery-wp-content/themes/jquery/js/modernizr.custom.2.6.2.min.js"></script>
 
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script>window.jQuery || document.write(unescape('%3Cscript src="http://jquery.com/jquery-wp-content/themes/jquery/js/jquery-1.9.1.min.js"%3E%3C/script%3E'))</script>
 
 	<script src="http://jquery.com/jquery-wp-content/themes/jquery/js/plugins.js"></script>
 	<script src="http://jquery.com/jquery-wp-content/themes/jquery/js/main.js"></script>
@@ -86,8 +76,81 @@ class Document(object):
 	<script src="//use.typekit.net/wde1aof.js"></script>
 	<script>try{Typekit.load();}catch(e){}</script>
 
-<script type='text/javascript' src='http://jquery.com/wp-includes/js/comment-reply.min.js?ver=3.8'></script>
-<meta name="generator" content="WordPress 3.8" />
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+	<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<script>
+	$(function() {
+		var availableTags = """+str(self.ac_terms)+""";
+		function split( val ) {return val.split( / \s*/ );}
+		function extractLast( term ) {return split( term ).pop();}
+		$( "#searchbar" )
+			.bind( "keydown", function( event ) {
+				if ( event.keyCode === $.ui.keyCode.TAB && $( this ).data( "ui-autocomplete" ).menu.active ) {event.preventDefault();}
+			})
+			.autocomplete({
+				//autoFocus: true,
+				//delay: 500,
+				//minLength: 3,
+				//source: function( request, response ) {
+				//	response( $.ui.autocomplete.filter(availableTags, extractLast( request.term ) ) );
+				//},
+				source: function( request, response ) {
+					var matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( extractLast( request.term ) ), "i" );
+					//response( $.grep( availableTags, function( item ){return matcher.test( item );}) );
+					var results = $.grep( availableTags, function( item ){return matcher.test( item );});
+					response(results.slice(0, 5));
+				},
+				search: function() {
+					var term = extractLast( this.value );
+					if ( term.length < 3 ) {return false;}
+				},
+				focus: function() {return false;},
+				select: function( event, ui ) {
+					var terms = split( this.value );
+					terms.pop();
+					terms.push( ui.item.value );
+					terms.push( "" );
+					this.value = terms.join( " " );
+					return false;
+				}
+			});
+	});
+	</script>
+
+	<style media="screen" type="text/css">
+	
+		.rating {
+		  	unicode-bidi: bidi-override;
+		  	direction: rtl;
+		  	text-align: left;
+		}
+		.rating > span {
+		  	display: inline-block;
+		  	position: relative;
+		  	width: 1.0em;
+		}
+		.rating > span:hover,
+		.rating > span:hover ~ span {
+		  	color: transparent;
+		}
+		.rating > span:hover:before,
+		.rating > span:hover ~ span:before {
+		   	content: "\\2605";
+		   	position: absolute;
+		   	#left: 0; 
+		   	color: CornflowerBlue;
+		}
+
+	</style>
+
+	<style media="screen" type="text/css">
+		.ui-menu, .ui-menu-item a{
+		color: #606060;
+		border-radius: 10px;
+		font-size:12px;
+		width:333px;
+	}
+	</style>
 
 </head>
 <body class="jquery home page page-id-5 page-template page-template-page-fullwidth-php page-slug-index single-author singular">
@@ -108,7 +171,9 @@ class Document(object):
 				<button type="submit" class="icon-search"><span class="visuallyhidden">search</span></button>
 					<label>
 					<span class="visuallyhidden">Search</span>
-					<input type="text" name="search" value="" placeholder="Search">
+					<div class="ui-widget">
+					<input id="searchbar" type="text" name="search" value="" placeholder="Search">
+					</div>
 				</label>
 			</form>
 		</nav>
@@ -200,7 +265,7 @@ class Document(object):
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
 		string += '<h3 style="color:303030;margin-bottom:5;">Rate this document:</h3>\n'
 		string += self.rating_stars(doc['urating'])
-		string += '<br><h3 style="color:303030;margin-bottom:5;">Sugested Documents:</h3><ul>\n'
+		string += '<br><h3 style="color:303030;margin-bottom:5;">Sugested documents:</h3><ul>\n'
 		string += self.sugested_documents(database, uid, did)
 		string += '</ul><br><h3 style="color:303030;margin-bottom:5;">Tags:</h3><ul><li>\n'
 		string += ', '.join(['<a href="/tag/'+str(uid)+'/'+t+'" style="color:303030;">'+t+'</a>' for t in doc['entities']])

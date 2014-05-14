@@ -17,6 +17,7 @@ from sys import exit, stdout
 from gensim.models.ldamodel import LdaModel
 from gensim import similarities
 from gensim.corpora import Dictionary
+from operator import itemgetter
 import os.path
 
 class Document:
@@ -158,6 +159,15 @@ class TopicModelling:
 			dump(len(self.data),f)
 			dump(self.data,f)
 
+		nr = []
+		for v in self.data.values():
+			nr.extend(v)
+		c = Counter(nr).items()
+		c.sort(key=itemgetter(1), reverse = True)
+		nr = [i[0] for i in c if i[1] > 4 and len(i[0])> 3]
+		with open('ac.loc','wb') as f:
+			dump(nr,f)
+
 	def generate_models(self):
 
 		def fetch_dict():
@@ -240,6 +250,10 @@ if __name__ == '__main__':
 		stdout.write('\r'+line)
 		stdout.flush()
 		modelling.update(doc)
+	stdout.write('\r'+' '*len(line))
+	line = '\r Generating AutoComplete Database ...'
+	stdout.write('\r'+line)
+	stdout.flush()
 	modelling.write()
 	stdout.write('\r'+' '*len(line))
 	line = '\r Generating LDA Model ...'
