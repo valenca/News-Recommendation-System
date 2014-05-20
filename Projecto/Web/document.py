@@ -30,6 +30,10 @@ class Document(object):
 
 	<title>News Feed - Documents</title>
 
+	<script src='//jquery-star-rating-plugin.googlecode.com/svn/trunk/jquery.js' type="text/javascript"></script>
+	<script src='//jquery-star-rating-plugin.googlecode.com/svn/trunk/jquery.rating.js' type="text/javascript" language="javascript"></script>
+	<link href='//jquery-star-rating-plugin.googlecode.com/svn/trunk/jquery.rating.css' type="text/css" rel="stylesheet"/>
+
 	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jquery/css/base.css?v=1">
 	<link rel="stylesheet" href="http://jqueryui.com/jquery-wp-content/themes/jqueryui.com/style.css">
 
@@ -122,6 +126,12 @@ class Document(object):
 	}
 	</style>
 
+	<script>
+	function rate() {
+		alert('qwer');
+	}
+	</script>
+
 </head>
 <body class="jquery home page page-id-5 page-template page-template-page-fullwidth-php page-slug-index single-author singular">
 
@@ -196,7 +206,7 @@ class Document(object):
 
 		database = connect('../Database/database.db')
 
-		doc={'urating':2,'view':0}
+		doc={'urating':-1,'view':0}
 		for row in database.execute('SELECT doc_datetime,doc_link,doc_thumbnail,doc_title,doc_description,'+\
 			'doc_text,doc_rating,doc_nviews FROM documents where doc_id = '+str(did)+';'):
 			doc['datetime']=parser.parse(str(row[0])).strftime('%d/%m/%Y - %H:%M:%S')
@@ -235,7 +245,7 @@ class Document(object):
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
 		string += '<h3 style="color:303030;margin-bottom:5;">Rate this document:</h3>\n'
 		string += self.rating_stars(doc['urating'])
-		string += '<br><h3 style="color:303030;margin-bottom:5;">Sugested documents:</h3><ul>\n'
+		string += '<br><br><h3 style="color:303030;margin-bottom:5;">Sugested documents:</h3><ul>\n'
 		string += self.sugested_documents(database, uid, did)
 		string += '</ul><br><h3 style="color:303030;margin-bottom:5;">Tags:</h3><ul><li>\n'
 		string += ', '.join(['<a href="/tag/'+str(uid)+'/'+t+'" style="color:303030;">'+t+'</a>' for t in doc['entities']])
@@ -271,5 +281,12 @@ class Document(object):
 		return string	
 
 	def rating_stars(self, urating):
-		if urating == -1: urating = 2;
-		return '<div class="rating" style="font-size:25px">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
+		if urating == -1: urating = 0;
+		string = ''
+		#return '<div class="rating" style="font-size:25px">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
+		for i in range(1,6):
+			if i == urating:
+				string += '<input type="radio" class="star" checked="checked" onclick="rate()"/>'
+			else:
+				string += '<input type="radio" class="star" onclick="rate()"/>'
+		return string

@@ -161,16 +161,11 @@ class Recommend(object):
 	def recommend_pagination(self, uid='1', page='1'):
 
 		string = ''
-		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/1'\"><b>1</b></a>\n"
-		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/2'\"><b>2</b></a>\n"
-		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/3'\"><b>3</b></a>\n"
-		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/4'\"><b>4</b></a>\n"
-		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/recommend/"+uid+"/5'\"><b>5</b></a>\n"
+		for i in range(1,self.num_pages+1):
+			if page == str(i):
+				string += "<span class='page-numbers current'><b style=\"color:#909090;\">"+str(i)+"</b></span>\n"
+			else:
+				string += "<a class='page-numbers' href='/recommend/"+uid+"/"+str(i)+"'\"><b>"+str(i)+"</b></a>\n"
 
 		return string
 
@@ -216,6 +211,9 @@ class Recommend(object):
 			doc['score'] = 3*doc['rating'] + 4*doc['views'] + doc['preftv']*1.5 + doc['preftr']*1.5
 
 		docs.sort(key=itemgetter('score'), reverse = True)
+
+		self.num_pages = min(len(docs)/10 + min(len(docs)%10,1),5)
+
 		docs = docs[(page-1)*10:page*10]
 		strings=[]
 		for n,did in enumerate([doc['id'] for doc in docs]):

@@ -167,16 +167,11 @@ class Search(object):
 	def search_pagination(self, uid, typ, page, search, topt, dopt ,hopt):
 
 		string = ''
-		if page == '1': string += "<span class='page-numbers current'><b style=\"color:#909090;\">1</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/1/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>1</b></a>\n"
-		if page == '2': string += "<span class='page-numbers current'><b style=\"color:#909090;\">2</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/2/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>2</b></a>\n"
-		if page == '3': string += "<span class='page-numbers current'><b style=\"color:#909090;\">3</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/3/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>3</b></a>\n"
-		if page == '4': string += "<span class='page-numbers current'><b style=\"color:#909090;\">4</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/4/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>4</b></a>\n"
-		if page == '5': string += "<span class='page-numbers current'><b style=\"color:#909090;\">5</b></span>\n"
-		else: string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/5/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>5</b></a>\n"
+		for i in range(1,self.num_pages+1):
+			if page == str(i):
+				string += "<span class='page-numbers current'><b style=\"color:#909090;\">"+str(i)+"</b></span>\n"
+			else:
+				string += "<a class='page-numbers' href='/search/"+uid+"/"+typ+"/"+str(i)+"/"+search+"/"+topt+"/"+dopt+"/"+hopt+"'\"><b>"+str(i)+"</b></a>\n"
 
 		return string
 
@@ -191,11 +186,14 @@ class Search(object):
 		myquery = parser.parse(' OR '.join((search.split())))
 
 		if typ == '1':
-			raw_results = searcher.search(myquery, limit=page*10)
+			raw_results = searcher.search(myquery, limit=50)
+			print raw_results[:]
+			self.num_pages = min(len(raw_results[:])/10 + min(len(raw_results[:])%10,1),5)
 			raw_results.fragmenter.surround = 30
 			list_results = list(range((page-1)*10, min(len(raw_results[:]),page*10)))
 		elif typ == '2':
 			raw_results = searcher.search(myquery, limit=None)
+			self.num_pages = min(len(raw_results[:])/10 + min(len(raw_results[:])%10,1),5)
 			raw_results.fragmenter.surround = 30
 			list_results = self.get_faceted(raw_results, uid, topt, dopt, hopt)[(page-1)*10:page*10]
 
@@ -324,5 +322,7 @@ class Search(object):
 				if hopt != viewed:
 					continue
 			list_results.append(i)
+
+		self.num_pages = min(len(list_results)/10 + min(len(list_results)%10,1),5)
 
 		return list_results
