@@ -157,8 +157,10 @@ class Document(object):
 	</style>
 
 	<script>
-	function rate() {
-		alert('qwer');
+	function rate(value, uid, did) {
+		xmlhttp=new XMLHttpRequest();
+		xmlhttp.open("POST","../../script",true);
+		xmlhttp.send(value+" "+uid+" "+did);
 	}
 	</script>
 
@@ -270,11 +272,12 @@ class Document(object):
 			database.execute('INSERT INTO historics VALUES ('+str(uid)+','+str(did)+',-1);')
 			for t in topics:
 				database.execute('UPDATE tpc_preferences set tpp_nviews = tpp_nviews+1 where tpp_topic = '+str(t)+' and tpp_user = '+str(uid)+';')
+			database.commit()
 		
 		string = '<div class="dev-links" style="width: 35%;">\n'
 		string += '<h3><a href="'+doc['link']+'" style="color:303030;">Source link</a></h3>\n'
 		string += '<h3 style="color:303030;margin-bottom:5;">Rate this document:</h3>\n'
-		string += self.rating_stars(doc['urating'])
+		string += self.rating_stars(doc['urating'], uid, did)
 		string += '<br><br><h3 style="color:303030;margin-bottom:5;">Sugested documents:</h3><ul>\n'
 		string += self.sugested_documents(database, uid, did)
 		string += '</ul><br><h3 style="color:303030;margin-bottom:5;">Tags:</h3><ul><li>\n'
@@ -310,13 +313,18 @@ class Document(object):
 				string += '<li><a href="/document/'+str(uid)+'/'+str(s)+'" style="color:303030;">'+str(row[0])+'</a></li>\n'
 		return string	
 
-	def rating_stars(self, urating):
+	def rating_stars(self, urating, uid, did):
 		if urating == -1: urating = 0;
-		string = ''
-		#return '<div class="rating" style="font-size:25px">' + (5-urating) * '<span>&#9734</span>' + urating *'<span>&#9733</span>'+'&nbsp&nbsp</div>'
+		string = '<div id="myDiv"></div>'
 		for i in range(1,6):
 			if i == urating:
-				string += '<input type="radio" class="star" checked="checked" onclick="rate()"/>'
+				if i != 6:
+					string += '<input id="star" type="radio" class="star" checked="checked" value='+str(i)+' onchange="rate('+str(i)+','+str(uid)+','+str(did)+')"/>'
+				else:
+					string += '<input id="star" type="radio" class="star required" checked="checked" value='+str(i)+' onchange="rate('+str(i)+','+str(uid)+','+str(did)+')"/>'
 			else:
-				string += '<input type="radio" class="star" onclick="rate()"/>'
+				if i != 6:
+					string += '<input id="star" type="radio" class="star" value='+str(i)+' onchange="rate('+str(i)+','+str(uid)+','+str(did)+')"/>'
+				else:
+					string += '<input id="star" type="radio" class="star required" value='+str(i)+' onchange="rate('+str(i)+','+str(uid)+','+str(did)+')"/>'
 		return string

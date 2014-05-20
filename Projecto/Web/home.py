@@ -4,6 +4,7 @@ from document import Document
 from tag import Tag
 from recommend import Recommend
 from search import Search
+from script import Script
 from sqlite3 import connect
 from operator import itemgetter
 from dateutil import parser
@@ -255,6 +256,7 @@ if __name__ == '__main__':
 	root.tag = Tag(ac)
 	root.recommend = Recommend(ac)
 	root.search = Search(ac)
+	root.script = Script()
 	#cherrypy.server.socket_host = '192.168.1.95'
 	#cherrypy.engine.start()
 	cherrypy.quickstart(root)
