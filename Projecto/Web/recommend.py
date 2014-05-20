@@ -196,10 +196,10 @@ class Recommend(object):
 				docs[n]['topics'].append(row[0])
 			docs[n]['preftv'] = 0; docs[n]['preftr'] = 0
 			for t in docs[n]['topics']:
-				for row in database.execute('SELECT tpp_nviews/usr_nviews, tpp_rating from users,'+\
+				for row in database.execute('SELECT tpp_nviews,usr_nviews, tpp_rating from users,'+\
 					'tpc_preferences where tpp_user = '+str(uid)+' and usr_id = '+str(uid)+' and tpp_topic = '+str(t)+';'):
-					docs[n]['preftv'] += row[0] if row[0] is not None else 0
-					docs[n]['preftr'] += row[1]/5.0
+					docs[n]['preftv'] += float(row[0])/row[1] if row[0] is not 0 else 0
+					docs[n]['preftr'] += row[2]/5.0
 			docs[n]['preftr'] /= float(len(docs[n]['topics']))
 			docs[n]['preftv'] /= float(len(docs[n]['topics']))
 
