@@ -181,8 +181,8 @@ class TopicModelling:
 
 		def fetch_model(dictionary):
 			corpus=my_corpus
-			lda = LdaModel(corpus,num_topics=50,update_every=1,chunksize=1000,passes=15)
-			#lda = LdaModel(corpus,num_topics=50,id2word=dictionary,update_every=1,chunksize=1000,passes=50)
+			lda = LdaModel(corpus,num_topics=100,update_every=1,chunksize=1000,passes=15)
+			#lda = LdaModel(corpus,num_topics=100,id2word=dictionary,update_every=1,chunksize=1000,passes=50)
 			lda.save('Topic/lda.loc')
 			return lda
 
