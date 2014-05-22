@@ -7,7 +7,6 @@ class Script(object):
 	@cherrypy.expose
 	def default(self):
 		cl = cherrypy.request.headers['Content-Length']
-		print cl
 		rawbody = cherrypy.request.body.read(int(cl))
 		rating, uid, did = rawbody.split()
 

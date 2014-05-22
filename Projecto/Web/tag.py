@@ -212,7 +212,7 @@ class Tag(object):
 				doc['views'] /= 1.0 * max_views
 
 		for doc in docs:
-			doc['score'] = 0.35*(1^doc['view']) + 2*doc['rating'] + 1.5*doc['urating'] + \
+			doc['score'] = 3.5*(1^doc['view']) + 2*doc['rating'] + 1.5*doc['urating'] + \
 						   2*doc['views'] + doc['preftv']*0.5 + doc['preftr']*0.5
 
 		docs.sort(key=itemgetter('score'), reverse = True)

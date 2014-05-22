@@ -187,7 +187,6 @@ class Search(object):
 
 		if typ == '1':
 			raw_results = searcher.search(myquery, limit=50)
-			print raw_results[:]
 			self.num_pages = min(len(raw_results[:])/10 + min(len(raw_results[:])%10,1),5)
 			raw_results.fragmenter.surround = 30
 			list_results = list(range((page-1)*10, min(len(raw_results[:]),page*10)))
